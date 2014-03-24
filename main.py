@@ -1,5 +1,5 @@
 """
-The main class that drives most of the program
+Contains classes and functions that trigger the API actions in GhRequests
 
 """
 
@@ -21,6 +21,11 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 
 class MainClass(GithubAuth, GhRequests):
+    """
+    If no environment variable exists with the access token in it,
+    auth the user as an admin. If it does exist, auth them as a regular
+    user.
+    """
 
     def get(self):
 
@@ -66,6 +71,10 @@ class MainClass(GithubAuth, GhRequests):
 
 
 class AccessDenied(BaseHandler):
+    """
+    User is not a member of the organization. Deny access
+    """
+
     def get(self):
 
         # For later
@@ -80,6 +89,9 @@ class AccessDenied(BaseHandler):
 
 
 class CreateRepo(GhRequests):
+    """
+    Create a private repository
+    """
 
     def post(self):
         access_token = os.environ.get('ACCESS_TOKEN')
@@ -101,6 +113,9 @@ class CreateRepo(GhRequests):
 
 
 class GetData(GhRequests):
+    """
+    Get team and user data about a particular repository
+    """
 
     def post(self):
         # Get collaborators for a specific repo
@@ -141,9 +156,12 @@ class GetData(GhRequests):
 
 
 class AddCollaborator(GhRequests):
+    """
+    Add a collaborator to a repo
+    """
 
     def post(self):
-        # Add a collaborator to the repo
+
         if (self.request.get('repo') and self.request.get('collaborator')):
             repo = self.request.get('repo')
             collaborator = self.request.get('collaborator')
@@ -151,11 +169,12 @@ class AddCollaborator(GhRequests):
                 AddCollaborator,
                 self
                 ).add_collaborator_to_repo(collaborator, repo)
-        else:
-            print('nope')
 
 
 class AddTeam(GhRequests):
+    """
+    Add repo access to a team
+    """
 
     def post(self):
         if (self.request.get('repo') and self.request.get('team_id')):
@@ -165,6 +184,9 @@ class AddTeam(GhRequests):
 
 
 class RemoveTeam(GhRequests):
+    """
+    Remove repo access from a team
+    """
 
     def post(self):
         if (self.request.get('repo') and self.request.get('team_id')):
@@ -174,6 +196,9 @@ class RemoveTeam(GhRequests):
 
 
 class EditTeam(GhRequests):
+    """
+    Edit the access level of a team_collaborators
+    """
 
     def post(self):
         if (self.request.get('team_id') and self.request.get('edit_type')
@@ -192,6 +217,10 @@ class EditTeam(GhRequests):
 
 
 class Logout(BaseHandler):
+    """
+    Log a user out from their session
+    """
+
     def get(self):
 
         # Delete all session variables

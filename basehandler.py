@@ -26,6 +26,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 
 class BaseHandler(webapp2.RequestHandler):
+    """BaseHandler is required by GAE to run the app"""
 
     def dispatch(self):
         # Get a session store for this request.

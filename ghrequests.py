@@ -1,16 +1,9 @@
 """
 Functions that the main class calls
 
-get_user
-get_private_repos
-get_organization_members
-get_organization_teams
-get_repo_collaborators
-get_repo_teams
-add_collaborator_to_repo
-add_team
-remove_team
-edit_team
+The functions contained in GhRequests perform the actions that power
+the program.
+
 """
 
 import os
@@ -30,6 +23,8 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 class GhRequests(BaseHandler):
 
     def get_user(self):
+        """Gets the username of a user and stores it in a session variable"""
+
         access_token = os.environ.get('ACCESS_TOKEN')
         url = 'https://api.github.com/user?access_token=' + str(access_token)
         result = urlfetch.fetch(
@@ -47,7 +42,8 @@ class GhRequests(BaseHandler):
         return result
 
     def get_private_repos(self):
-        # Get private repos that belong to the organization
+        """Get private repos that belong to the organization"""
+
         access_token = os.environ.get('ACCESS_TOKEN')
 
         url = 'https://api.github.com/orgs/' + os.environ.get('ORG') + \
@@ -70,7 +66,8 @@ class GhRequests(BaseHandler):
         return repos
 
     def get_organization_members(self):
-        # Get members that belong to the organization
+        """Get members that belong to the organization"""
+
         access_token = os.environ.get('ACCESS_TOKEN')
 
         url = 'https://api.github.com/orgs/' + os.environ.get('ORG') \
@@ -91,7 +88,7 @@ class GhRequests(BaseHandler):
         return members
 
     def get_organization_teams(self):
-        # Get all the teams that belong to an organization
+        """Get all the teams that belong to an organization"""
 
         access_token = os.environ.get('ACCESS_TOKEN')
 
@@ -113,7 +110,8 @@ class GhRequests(BaseHandler):
         return teams
 
     def get_repo_collaborators(self, repo):
-        # Get members that belong to the organization
+        """Get members that belong to the organization"""
+
         access_token = os.environ.get('ACCESS_TOKEN')
 
         url = 'https://api.github.com/repos/' + os.environ.get('ORG') + '/' \
@@ -135,7 +133,8 @@ class GhRequests(BaseHandler):
         return collaborators
 
     def get_repo_teams(self, repo):
-        # Get teams with access to a repo
+        """Get teams with access to a repo"""
+
         access_token = os.environ.get('ACCESS_TOKEN')
 
         # Get teams with access to a repo
@@ -161,8 +160,10 @@ class GhRequests(BaseHandler):
         return repo_teams
 
     def add_collaborator_to_repo(self, collaborator, repo):
-        # Add a member of the organization as a collaborator to a repository
-        # PUT /repos/:owner/:repo/collaborators/:user
+        """
+        Add a member of the organization as a collaborator to a repository
+        """
+
         access_token = os.environ.get('ACCESS_TOKEN')
 
         # Add collaborator to repo
@@ -178,6 +179,8 @@ class GhRequests(BaseHandler):
         results = json.loads(results.content)
 
     def add_team(self, repo, team_id):
+        """Add repository access to a team"""
+
         access_token = os.environ.get('ACCESS_TOKEN')
 
         url = 'https://api.github.com/teams/' + team_id + '/repos/' \
@@ -192,6 +195,8 @@ class GhRequests(BaseHandler):
         return True
 
     def remove_team(self, repo, team_id):
+        """Remove repository access from a team"""
+
         access_token = os.environ.get('ACCESS_TOKEN')
 
         url = 'https://api.github.com/teams/' + team_id + '/repos/' \
@@ -205,6 +210,8 @@ class GhRequests(BaseHandler):
         return True
 
     def edit_team(self, team_name, team_id, edit_type):
+        """Edit the access level of a team"""
+
         access_token = os.environ.get('ACCESS_TOKEN')
 
         url = 'https://api.github.com/teams/' + team_id + '?access_token=' \
