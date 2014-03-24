@@ -1,6 +1,12 @@
 """
 Auth admins and users so that they may enter the product
 
+The auth process retrieves the access token of the user
+and prints it to the screen so that they may copy and
+paste it to the app.yaml file. While not ideal, this workflow
+is necessary since there is no way in GAE to set a reusable
+environment variable, like in Heroku.
+
 """
 
 import os
@@ -21,7 +27,8 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 class GithubAuth(BaseHandler):
 
     def auth_admin(self):
-        # Set variables
+        """Authenticate that user is an admin of the organization"""
+
         code = 'code'
         url = ''
         access_token = ''
@@ -86,7 +93,6 @@ class GithubAuth(BaseHandler):
 
                 # If not admin, send to 403
                 if not is_admin_of_wf:
-                    # Denied!
                     self.redirect('/403')
                 else:
                     # User is admin of WebFilings,
@@ -94,7 +100,8 @@ class GithubAuth(BaseHandler):
                     return access_token
 
     def auth_user(self):
-        # Set variables
+        """Authenticate that user belongs to the organization"""
+
         code = 'code'
         url = ''
         access_token = ''
@@ -156,7 +163,6 @@ class GithubAuth(BaseHandler):
 
                 # If not admin, send to 403
                 if not is_user_of_wf:
-                    # Denied!
                     self.redirect('/403')
                 else:
                     # User is admin of WebFilings,
