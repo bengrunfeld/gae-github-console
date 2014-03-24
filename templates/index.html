@@ -1,0 +1,187 @@
+{% extends "templates/base.html" %}
+{% block content %}
+<div class="container">
+
+    <div style="height:50px"></div>
+
+    <div class="col-sm-3 .col-sm-offset-2 col-xs-12 pull-right repo-button">
+        <button type="button" class="btn btn-lg btn-primary" data-toggle="modal" data-target="#create_repo">Create Private Repo</button>
+        <button type="button" class="btn btn-lg btn-default logs-btn" data-toggle="modal" data-target="#logs">Display Logs</button>
+    </div>
+
+    <div class="repos col-sm-7 col-xs-12">
+        <div class="panel panel-default repo-names">
+            <div class="panel-heading"><h4>Private Repositories belonging to <strong>{{ org }}</strong></h4></div>
+
+            <table class="table">
+                {% for repo in repos %}
+                    <tr>
+                        <td><button type="button" class="btn btn-link btn-sm edit-repo" value="{{ repo }}" data-toggle="modal" 
+                        data-target="#edit_access">{{ repo }}</button></td>
+                        <td><button type="button" class="btn btn-success btn-sm edit-repo pull-right" value="{{ repo }}" data-toggle="modal" data-target="#edit_access">Edit Access</button></td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    <div style="clear:both;"></div>
+
+    <!-- Create Repo Modal -->
+    <div class="modal fade" id="create_repo" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">Create Private Repo</h4>
+                </div>
+                <form class="form-horizontal" role="form" method="post" action="/create-repo">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="repo-name" class="col-sm-4 control-label">Repo Name</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" id="repo-name" name="repo-name" placeholder="enter repo name">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="repo-desc" class="col-sm-4 control-label">Repo Description</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" id="repo-desc" name="repo-desc" placeholder="enter repo description">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Create Repo</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Display Logs Modal -->
+    <div class="modal fade" id="logs" tabindex="-1" role="dialog" aria-labelledby="viewLogsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="viewLogsModalLabel">Display Logs</h4>
+                </div>                
+                <div class="modal-body">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Recent Logs</h3>
+                        </div>
+                        <ul class="list-group list-logs">
+                            <li class="list-group-item"><i>2014-03-20 17:21:29,422</i> Team <b>team kasava</b> was added to the <b>tinysky</b> repo</li>
+                            <li class="list-group-item"><i>2014-03-20 17:21:29,422</i> User <b>mattcutts</b> was added to the <b>team kasava</b> team</li>
+                            <li class="list-group-item"><i>2014-03-20 17:21:29,422</i> Team <b>team avatar</b> was changed to have <b>admin</b> access</li>
+                        </ul>
+                    </div>
+
+                    <!-- Delete this -->
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Email Logs</h3>
+                        </div>
+                        <div class="panel-body">
+                            <form role="form">
+                                <div class="form-group">
+                                    <label for="exampleInputEmail1">Email address</label>
+                                    <input type="email" class="form-control" id="exampleInputEmail1" placeholder="Enter email">
+                                </div>
+                                <button type="submit" class="btn btn-default">Send Email</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Edit Access Modal -->
+    <div class="modal fade" id="edit_access" tabindex="-1" role="dialog" aria-labelledby="editAccessModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="editAccessModalLabel">Edit Repo Access</h4>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Repo Name: <span class="panel-repo-name"></span></h3>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-body">
+                    <!-- Nav tabs -->
+                    <ul class="nav nav-tabs edit-access-tabs">
+                        <li class="active"><a href="#teams" data-toggle="tab">Teams</a></li>
+                        <li><a href="#team-members" data-toggle="tab">Team Members</a></li>
+                    </ul>
+
+                    <!-- Tab panes -->
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="teams">
+                            <ul class="list-group list-teams">
+                                <li class="list-group-item active">Teams in Organization</li>
+                            </ul>
+
+                            <ul class="list-group list-team-collaborators">
+                                <li class="list-group-item active">Teams with Access to Repo</li>
+                            </ul>
+                        </div>
+                        <div class="tab-pane" id="team-members">
+                            <div class="panel panel-primary">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">Team</h3>
+                                </div>
+                                <div class="panel-body">
+                                    <select class="form-control list-all-teams">
+                                        <option selected="selected">Select a team...</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="panel panel-primary">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">Team Members</h3>
+                                </div>
+                                <ul class="list-group list-team-members">
+                                    <li class="list-group-item">mattcutts<button class="btn btn-danger btn-sm team-btn make-pull pull-right">Remove</button></li>
+                                    <li class="list-group-item">guido<button class="btn btn-danger btn-sm team-btn make-pull pull-right">Remove</button></li>
+                                </ul>                                
+                            </div>
+
+                            <div class="panel panel-primary">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">Organization Members</h3>
+                                </div>
+                                <div class="panel-body">
+                                    <select multiple class="form-control list-members">
+                                        <option disabled selected="selected">Select members...</option>
+                                    </select>
+                                </div>
+                            </div>                            
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <footer>
+      <p>&copy; WebFilings 2014</p>
+    </footer>
+</div> <!-- .container -->
+{% endblock content %}

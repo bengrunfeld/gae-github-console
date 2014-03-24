@@ -1,0 +1,17 @@
+{% extends "templates/base.html" %}
+{% block content %}
+<div class="container">
+
+<h1>403 - Access Denied</h1>
+
+<h3>You are not allowed here!</h3>
+
+<button type="button" class="btn btn-lg btn-danger logout_btn" onclick="window.location='/logout'">Logout of Github</button>
+
+<hr>
+
+<footer>
+  <p>&copy; Company 2013</p>
+</footer>
+</div> <!-- .container -->
+{% endblock content %}
