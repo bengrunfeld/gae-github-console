@@ -17,6 +17,7 @@ handlers:
 - url: /.*
   script: main.application  
   login: required
+  secure: always
 # auth_fail_action: unauthorized
 
 env_variables:
