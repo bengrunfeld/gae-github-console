@@ -19,7 +19,8 @@ run: deps link_libs
 	dev_appserver.py .
 
 test: clean integrations
-	deps: py_dev_deps py_deploy_deps 
+
+deps: py_dev_deps py_deploy_deps 
 
 bootstrap-gae:
 	./bootstrap-gae.sh
