@@ -4,6 +4,12 @@ Contains classes and functions that trigger the API actions in GhRequests
 """
 
 import os
+import sys
+
+LIB_PATH = os.path.join(os.getcwd(), 'lib')
+if LIB_PATH not in sys.path:
+    sys.path.insert(0, LIB_PATH)
+
 import json
 import jinja2
 import webapp2

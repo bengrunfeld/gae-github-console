@@ -9,9 +9,6 @@ The Jinja2 environment is also set up here.
 """
 
 import os
-import sys
-
-sys.path.append("lib")
 
 import jinja2
 import webapp2
