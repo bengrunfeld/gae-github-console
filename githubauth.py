@@ -12,160 +12,125 @@ environment variable, like in Heroku.
 import os
 import json
 import urllib
-import jinja2
+import uuid
 
-from google.appengine.api import users, urlfetch
-from basehandler import BaseHandler
+from google.appengine.api import memcache
+from google.appengine.api import urlfetch
+from google.appengine.api import users
 
-
-JINJA_ENVIRONMENT = jinja2.Environment(
-    loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
-    extensions=['jinja2.ext.autoescape'],
-    autoescape=True)
+import webapp2
 
 
-class GithubAuth(BaseHandler):
+GITHUB_AUTH_URL = 'https://github.com/login/oauth/authorize'
+GITHUB_ACCESS_URL = 'https://github.com/login/oauth/access_token'
+GITHUB_ORGS_URL = 'https://github.com/user/orgs'
 
-    def auth_admin(self):
-        """Authenticate that user is an admin of the organization"""
 
-        code = 'code'
-        url = ''
-        access_token = ''
-        is_admin_of_wf = False
-        result = ''
+# Get the redirect URLs for our own application.
+APP_ROOT = 'https://{}'.format(os.environ['HTTP_HOST'])
+GET_ACCESS_TOKEN_URL = '{}/_gh/access_token'.format(APP_ROOT)
+DISPLAY_ACCESS_TOKEN_URL = '{}/_gh/display_access_token'.format(APP_ROOT)
 
-        # If admin not logged in to Google Accounts, take them to login page
-        google_user = users.get_current_user()
 
-        if google_user:
-            url = self.request.url
-            if code not in url:
-                # Redirect to GH for code
-                url = 'https://github.com/login/oauth/authorize? \
-                    scope=user,repo&client_id=' \
-                    + os.environ.get('CLIENT_ID')
+def _user_is_org_member(access_token):
+    """Check if user is an admin of ORG."""
 
-                self.redirect(url)
-            else:
-                # User has been to GH, continue with auth process.
-                cutoff = url.find('=')
-                cutoff += 1
-                code = url[cutoff:]
+    url = '{}?access_token={}'.format(GITHUB_ORGS_URL, access_token)
 
-                # We have code, now get Access Token
-                fields = {
-                    "client_id": os.environ.get('CLIENT_ID'),
-                    "client_secret": os.environ.get('CLIENT_SECRET'),
-                    "code": code
-                }
-                url = 'https://github.com/login/oauth/access_token'
-                data = urllib.urlencode(fields)
-                result = urlfetch.fetch(url=url,
-                                        payload=data,
-                                        method=urlfetch.POST
-                                        )
+    result = urlfetch.fetch(url=url, method=urlfetch.GET)
 
-                # Get the query string
-                query_string = str(result.content)
+    orgs = json.loads(result.content)
 
-                # Get the access token out of the full query string
-                access_token = query_string[13:]
-                end_access = access_token.find('&')
-                access_token = access_token[:end_access]
+    for org in orgs:
+        if org.get('login') == os.environ.get('ORG'):
+            return True
 
-                # Check if user is an admin of WebFilings
-                # still need to add admin test
-                url = 'https://api.github.com/user/orgs?access_token=' \
-                    + str(access_token)
+    return False
 
-                result = urlfetch.fetch(
-                    url=url,
-                    method=urlfetch.GET,
-                )
 
-                orgs = json.loads(result.content)
+def _get_access_token(auth_code):
+    """Get an access token from an auth token."""
 
-                for org in orgs:
-                    if 'login' in org and org['login']:
-                        if org['login'] == os.environ.get('ORG'):
-                            is_admin_of_wf = True
+    request_params = {
+        'client_id': os.environ.get('CLIENT_ID'),
+        'client_secret': os.environ.get('CLIENT_SECRET'),
+        'code': auth_code,
+        'redirect_uri': DISPLAY_ACCESS_TOKEN_URL
+    }
 
-                # If not admin, send to 403
-                if not is_admin_of_wf:
-                    self.redirect('/403')
-                else:
-                    # User is admin of WebFilings,
-                    # return access token to calling class
-                    return access_token
+    result = urlfetch.fetch(GITHUB_ACCESS_URL,
+                            payload=urllib.urlencode(request_params),
+                            method=urlfetch.POST)
 
-    def auth_user(self):
-        """Authenticate that user belongs to the organization"""
+    return json.loads(result.content).get('access_token')
 
-        code = 'code'
-        url = ''
-        access_token = ''
-        is_user_of_wf = False
-        result = ''
 
-        # If user not logged in to Google Accounts, take them to login page
-        google_user = users.get_current_user()
+class GetAuthTokenHandler(webapp2.RequestHandler):
+    """Redirect users to github to get an access request token."""
 
-        if google_user:
-            url = self.request.url
-            if code not in url:
-                # Redirect to GH for code
-                url = 'https://github.com/login/oauth/authorize? \
-                    scope=user,repo&client_id=' + os.environ.get('CLIENT_ID')
-                self.redirect(url)
-            else:
-                # User has been to GH, continue with auth process.
-                cutoff = url.find('=')
-                cutoff += 1
-                code = url[cutoff:]
+    def get(self):
+        # If the user has not authed to Google, bail.
+        if not users.get_current_user():
+            # TODO: Maybe return a 403 here?
+            self.error(403)
+            return
 
-                # We have code, now get Access Token
-                fields = {
-                    "client_id": os.environ.get('CLIENT_ID'),
-                    "client_secret": os.environ.get('CLIENT_SECRET'),
-                    "code": code
-                }
-                url = 'https://github.com/login/oauth/access_token'
-                data = urllib.urlencode(fields)
-                result = urlfetch.fetch(url=url,
-                                        payload=data,
-                                        method=urlfetch.POST
-                                        )
+        state = uuid.uuid4().hex
+        memcache.set(state, True, time=300)
 
-                # Get the query string
-                query_string = str(result.content)
+        request_params = {
+            'scope': 'user,repo',
+            'client_id': os.environ.get('CLIENT_ID'),
+            'redirect_uri': GET_ACCESS_TOKEN_URL,
+            'state': state
+        }
 
-                # Get the access token out of the full query string
-                access_token = query_string[13:]
-                end_access = access_token.find('&')
-                access_token = access_token[:end_access]
+        url = '{}?{}'.format(GITHUB_AUTH_URL, urllib.urlencode(request_params))
 
-                # Check if user belongs to WebFilings
-                url = 'https://api.github.com/user/orgs?access_token=' \
-                    + str(access_token)
+        self.redirect(url)
 
-                result = urlfetch.fetch(
-                    url=url,
-                    method=urlfetch.GET,
-                )
 
-                orgs = json.loads(result.content)
+class GetAccessTokenHandler(webapp2.RequestHandler):
+    """Convert the auth token supplied by github to an access token."""
 
-                for org in orgs:
-                    if 'login' in org and org['login']:
-                        if org['login'] == os.environ.get('ORG'):
-                            is_user_of_wf = True
+    def get(self):
+        # If the user has not authed to Google, bail.
+        if not users.get_current_user():
+            # TODO: Maybe return a 403 here?
+            self.error(403)
+            return
 
-                # If not admin, send to 403
-                if not is_user_of_wf:
-                    self.redirect('/403')
-                else:
-                    # User is admin of WebFilings,
-                    # return access token to calling class
-                    self.session['access_token'] = access_token
-                    self.redirect('/')
+        state = self.request.get('state')
+        if not state or not memcache.get(state):
+            # TODO: What to do here?
+            self.error(403)
+            return
+
+        memcache.delete(state)
+
+        code = self.request.get('code')
+        if not code:
+            # TODO: What to do here?
+            self.error(500)
+            return
+
+        access_token = self._get_access_token(code)
+
+        if not _user_is_org_member(access_token):
+             # TODO: Maybe this could be better?
+            self.error(403)
+            return
+
+        if not os.environ['ACCESS_TOKEN']:
+            # This means the app isn't set up.  Admin needs to do so.
+            self.redirect(
+                '/_gh/display_token?access_token={}'.format(access_token))
+            return
+
+        # TODO: Probably need to set the user name or something here.
+        # TODO: This probably needs to inherit from BaseHandler for this to
+        # work correctly.
+        self.session['github_member'] = True
+        self.redirect('/')
+        return
+
