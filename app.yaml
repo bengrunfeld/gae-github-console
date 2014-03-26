@@ -17,11 +17,13 @@ handlers:
 - url: /.*
   script: main.application  
   login: required
+  secure: always
 # auth_fail_action: unauthorized
 
 env_variables:
-  CLIENT_ID: xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-  CLIENT_SECRET: xxxxxxxxxxxxxxxxxxxxxxxxx
-  ORG: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-  ACCESS_TOKEN: xxxxxxxxxxxxxxxxxxxxxxxxxx
-  SESSION_SECRET: xxxxxxxxxxxxxxxxxxxxxxxx
+  CLIENT_ID: ${CLIENT_ID}
+  CLIENT_SECRET: ${CLIENT_SECRET}
+  ORG: ${ORG}
+  ACCESS_TOKEN: ${ACCESS_TOKEN}
+  SESSION_SECRET: ${SESSION_SECRET}
+

@@ -9,15 +9,15 @@ The Jinja2 environment is also set up here.
 """
 
 import os
-import sys
-
-sys.path.append("lib")
 
 import jinja2
 import webapp2
 
 from webapp2_extras import sessions
 
+
+TEMPLATE_DIR = 'templates'
+TEMPLATE_SUFFIX = '.html'
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -26,7 +26,9 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 
 class BaseHandler(webapp2.RequestHandler):
-    """BaseHandler is required by GAE to run the app"""
+    """BaseHandler provides a simple framework to ensure sessions are setup and
+    to ease the displaying of HTML templates.
+    """
 
     def dispatch(self):
         # Get a session store for this request.
@@ -43,3 +45,15 @@ class BaseHandler(webapp2.RequestHandler):
     def session(self):
         # Returns a session using the default cookie key.
         return self.session_store.get_session()
+
+    def render(self, template_name, context):
+
+        if not template_name.startswith(TEMPLATE_DIR):
+            template_name = os.path.join(TEMPLATE_DIR, template_name)
+
+        if not template_name.endswith(TEMPLATE_SUFFIX):
+            template_name += TEMPLATE_SUFFIX
+
+        template = JINJA_ENVIRONMENT.get_template(template_name)
+        self.response.write(template.render(context))
+
