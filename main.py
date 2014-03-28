@@ -16,9 +16,9 @@ import webapp2
 
 from google.appengine.api import urlfetch
 from basehandler import BaseHandler
-from githubauth import GithubAuth
 from ghrequests import GhRequests
 
+ACCESS_TOKEN = os.environ.get('ACCESS_TOKEN')
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -26,7 +26,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 
-class MainClass(GithubAuth, GhRequests):
+class MainClass(webapp2.RequestHandler):
     """
     If no environment variable exists with the access token in it,
     auth the user as an admin. If it does exist, auth them as a regular
@@ -35,47 +35,26 @@ class MainClass(GithubAuth, GhRequests):
 
     def get(self):
 
-        if os.environ.get('ACCESS_TOKEN'):
-            # Set a user name
-            if self.session.get('username'):
-                username = self.session.get('username')
-            else:
-                username = 'User'
+        if not ACCESS_TOKEN and 'code' not in (self.request.url):
+            self.redirect('/get-auth-token') 
 
-            # Auth the user
-            if not self.session.get('access_token'):
-                super(MainClass, self).auth_user()
+        if 'code' in self.request.url:
+            print('got here')
+            print(self.request.url)
+            
+class DisplayToken(BaseHandler):
+    """
+    Display the access token to an authorized owner of the organization
+    """
 
-            # Get private repos
-            repos = super(MainClass, self).get_private_repos()
+    def get(self):
+        # Template Settings
+        temp = 'login'
+        context = {"access_token": self.request.get('access_token')} 
 
-            # Template Settings
-            context = {
-                "username": username,
-                "repos": repos,
-                "org": os.environ.get('ORG'),
-            }
+        super(DisplayToken, self).render(temp, context)
 
-            temp = 'templates/index.html'
-
-            template = JINJA_ENVIRONMENT.get_template(temp)
-            self.response.write(template.render(context))
-
-        else:
-            # Get an Access Token
-            access_token = super(MainClass, self).auth_admin()
-
-            # Template Settings
-            context = {
-                "username": "admin",
-                "access_token": access_token,
-            }
-            temp = 'templates/login.html'
-
-            template = JINJA_ENVIRONMENT.get_template(temp)
-            self.response.write(template.render(context))
-
-
+        
 class AccessDenied(BaseHandler):
     """
     User is not a member of the organization. Deny access
@@ -251,4 +230,5 @@ application = webapp2.WSGIApplication([
     ('/remove-team', RemoveTeam),
     ('/edit-team', EditTeam),
     ('/logout', Logout),
+    ('/display_token.*', DisplayToken),
 ], config=config, debug=True)

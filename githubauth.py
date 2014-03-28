@@ -14,6 +14,8 @@ import json
 import urllib
 import uuid
 
+from urlparse import parse_qs
+
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from google.appengine.api import users
@@ -23,21 +25,20 @@ import webapp2
 
 GITHUB_AUTH_URL = 'https://github.com/login/oauth/authorize'
 GITHUB_ACCESS_URL = 'https://github.com/login/oauth/access_token'
-GITHUB_ORGS_URL = 'https://github.com/user/orgs'
+GITHUB_ORGS_URL = 'https://api.github.com/user/orgs'
 
 
 # Get the redirect URLs for our own application.
-APP_ROOT = 'https://{}'.format(os.environ['HTTP_HOST'])
-GET_ACCESS_TOKEN_URL = '{}/_gh/access_token'.format(APP_ROOT)
-DISPLAY_ACCESS_TOKEN_URL = '{}/_gh/display_access_token'.format(APP_ROOT)
-
+APP_ROOT = 'http://{}'.format(os.environ['HTTP_HOST'])
+GET_ACCESS_TOKEN_URL = '{}/get-access-token/'.format(APP_ROOT)
+DISPLAY_ACCESS_TOKEN_URL = '{}/get-access-token/'.format(APP_ROOT)
 
 def _user_is_org_member(access_token):
     """Check if user is an admin of ORG."""
 
     url = '{}?access_token={}'.format(GITHUB_ORGS_URL, access_token)
-
     result = urlfetch.fetch(url=url, method=urlfetch.GET)
+
 
     orgs = json.loads(result.content)
 
@@ -62,7 +63,9 @@ def _get_access_token(auth_code):
                             payload=urllib.urlencode(request_params),
                             method=urlfetch.POST)
 
-    return json.loads(result.content).get('access_token')
+    res = parse_qs(result.content)
+    return res['access_token'][0]
+    # return json.loads(result.content).get('access_token')
 
 
 class GetAuthTokenHandler(webapp2.RequestHandler):
@@ -86,7 +89,6 @@ class GetAuthTokenHandler(webapp2.RequestHandler):
         }
 
         url = '{}?{}'.format(GITHUB_AUTH_URL, urllib.urlencode(request_params))
-
         self.redirect(url)
 
 
@@ -114,17 +116,17 @@ class GetAccessTokenHandler(webapp2.RequestHandler):
             self.error(500)
             return
 
-        access_token = self._get_access_token(code)
+        access_token = _get_access_token(code)
 
         if not _user_is_org_member(access_token):
              # TODO: Maybe this could be better?
             self.error(403)
             return
 
-        if not os.environ['ACCESS_TOKEN']:
+        if not os.environ.get('ACCESS_TOKEN'):
             # This means the app isn't set up.  Admin needs to do so.
             self.redirect(
-                '/_gh/display_token?access_token={}'.format(access_token))
+                '/display_token?access_token={}'.format(access_token))
             return
 
         # TODO: Probably need to set the user name or something here.
@@ -134,3 +136,12 @@ class GetAccessTokenHandler(webapp2.RequestHandler):
         self.redirect('/')
         return
 
+config = {}
+config['webapp2_extras.sessions'] = {
+    'secret_key': os.environ.get('SESSION_SECRET'),
+}
+
+application = webapp2.WSGIApplication([
+    ('/get-auth-token', GetAuthTokenHandler),
+    ('/get-access-token/.*', GetAccessTokenHandler),
+], config=config, debug=True)
