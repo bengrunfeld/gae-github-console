@@ -20,6 +20,9 @@ handlers:
 - url: /get-access-token/.*
   script: githubauth.application
 
+- url: /log-user-in
+  script: githubauth.application
+
 - url: /.*
   script: main.application  
   login: required
@@ -27,7 +30,8 @@ handlers:
 # auth_fail_action: unauthorized
 
 env_variables:
-  CLIENT_ID: ${CLIENT_ID}
-  CLIENT_SECRET: ${CLIENT_SECRET}
-  ORG: ${ORG}
-  SESSION_SECRET: ${SESSION_SECRET}
+  CLIENT_ID:  
+  CLIENT_SECRET:  
+  ORG:  
+  ACCESS_TOKEN: 
+  SESSION_SECRET: 

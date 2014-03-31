@@ -22,23 +22,27 @@ from google.appengine.api import users
 
 import webapp2
 
+from basehandler import BaseHandler
 
 GITHUB_AUTH_URL = 'https://github.com/login/oauth/authorize'
 GITHUB_ACCESS_URL = 'https://github.com/login/oauth/access_token'
 GITHUB_ORGS_URL = 'https://api.github.com/user/orgs'
-
+GITHUB_CHECK_USER = 'https://api.github.com/user'
 
 # Get the redirect URLs for our own application.
 APP_ROOT = 'http://{}'.format(os.environ['HTTP_HOST'])
 GET_ACCESS_TOKEN_URL = '{}/get-access-token/'.format(APP_ROOT)
 DISPLAY_ACCESS_TOKEN_URL = '{}/get-access-token/'.format(APP_ROOT)
 
+# Get the Access Token, if it exists
+ACCESS_TOKEN = os.environ.get('ACCESS_TOKEN')
+
+
 def _user_is_org_member(access_token):
-    """Check if user is an admin of ORG."""
+    """Check if user is a member of ORG."""
 
     url = '{}?access_token={}'.format(GITHUB_ORGS_URL, access_token)
     result = urlfetch.fetch(url=url, method=urlfetch.GET)
-
 
     orgs = json.loads(result.content)
 
@@ -48,6 +52,9 @@ def _user_is_org_member(access_token):
 
     return False
 
+def _user_is_org_admin(access_token):
+    """Check if user is an admin of ORG"""
+    pass
 
 def _get_access_token(auth_code):
     """Get an access token from an auth token."""
@@ -63,13 +70,13 @@ def _get_access_token(auth_code):
                             payload=urllib.urlencode(request_params),
                             method=urlfetch.POST)
 
-    res = parse_qs(result.content)
-    return res['access_token'][0]
+    content = parse_qs(result.content)
+    return content['access_token'][0]
     # return json.loads(result.content).get('access_token')
 
 
 class GetAuthTokenHandler(webapp2.RequestHandler):
-    """Redirect users to github to get an access request token."""
+    """Get an auth token that you can switch for an access token."""
 
     def get(self):
         # If the user has not authed to Google, bail.
@@ -78,6 +85,7 @@ class GetAuthTokenHandler(webapp2.RequestHandler):
             self.error(403)
             return
 
+        # TODO: Change this into a flow object
         state = uuid.uuid4().hex
         memcache.set(state, True, time=300)
 
@@ -87,12 +95,10 @@ class GetAuthTokenHandler(webapp2.RequestHandler):
             'redirect_uri': GET_ACCESS_TOKEN_URL,
             'state': state
         }
-
         url = '{}?{}'.format(GITHUB_AUTH_URL, urllib.urlencode(request_params))
         self.redirect(url)
 
-
-class GetAccessTokenHandler(webapp2.RequestHandler):
+class GetAccessTokenHandler(BaseHandler):
     """Convert the auth token supplied by github to an access token."""
 
     def get(self):

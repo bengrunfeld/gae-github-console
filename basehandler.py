@@ -11,13 +11,19 @@ The Jinja2 environment is also set up here.
 import os
 
 import jinja2
+import json
+import urllib
 import webapp2
 
+from google.appengine.api import urlfetch
+from urlparse import parse_qs
 from webapp2_extras import sessions
-
 
 TEMPLATE_DIR = 'templates'
 TEMPLATE_SUFFIX = '.html'
+
+GITHUB_API_URL = 'https://api.github.com'
+ACCESS_TOKEN = '?access_token=' + os.environ.get('ACCESS_TOKEN')
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -57,3 +63,57 @@ class BaseHandler(webapp2.RequestHandler):
         template = JINJA_ENVIRONMENT.get_template(template_name)
         self.response.write(template.render(context))
 
+    def query(self, url, payload='', method='GET'):
+        """Queries Github and returns the result of the request"""
+        
+        # parse the url properly
+        url = GITHUB_API_URL + url + ACCESS_TOKEN
+
+        # if there is a payload, parse it
+        if payload:
+            data = urllib.urlencode(payload)
+
+        if method in ('GET'):
+            result = urlfetch.fetch(url=url)
+
+        if method in ('POST', 'PUT', 'PATCH'):
+            result = urlfetch.fetch(url=url, payload=data, method=method)
+
+        # Convert the result to something useable, if it exists
+        if result.content:
+            response = json.loads(result.content)
+        else:
+            response = False 
+
+        return response
+
+    def sort_results(self, results, attribute, attribute2=''):
+        """Sorts the results returned from a request"""
+
+        # Declare a dictionary to store the results
+        response = []
+
+        # Multiple conditions need to be set
+        if attribute2:
+            for result in results:
+                if (attribute in result and result[attribute] and 
+                        attribute2 in result and result[attribute2]):
+                    response.append(result[attribute])
+
+            return response
+
+        # Only a single condition needs to be set
+        for result in results:
+            if self.request.get(attribute):
+                response.append(result[attribute])
+
+        return response
+
+   
+
+    
+
+        print('RESPONSE:')
+        print(response)
+
+        return response 

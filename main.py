@@ -19,6 +19,7 @@ from basehandler import BaseHandler
 from ghrequests import GhRequests
 
 ACCESS_TOKEN = os.environ.get('ACCESS_TOKEN')
+ORG = os.environ.get('ORG')
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -26,22 +27,48 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 
-class MainClass(webapp2.RequestHandler):
+class MainClass(BaseHandler):
     """
     If no environment variable exists with the access token in it,
     auth the user as an admin. If it does exist, auth them as a regular
-    user.
+    user and let them use the app.
     """
 
     def get(self):
 
-        if not ACCESS_TOKEN and 'code' not in (self.request.url):
+        # Admin hasn't auth'd via Github yet
+        if not ACCESS_TOKEN and 'code' not in self.request.url: 
             self.redirect('/get-auth-token') 
+            return
 
-        if 'code' in self.request.url:
-            print('got here')
-            print(self.request.url)
-            
+        # Admin has successfully auth'd via Github, now get Access Token
+        if not ACCESS_TOKEN and 'code' in self.request.url:
+            self.redirect('/get-access-token')
+            return
+
+        # Product activated, but User needs to auth via Github
+        if (ACCESS_TOKEN and not 'code' in self.request.url and
+                not self.session.get('github_member')):
+            self.redirect('/get-auth-token')
+            return
+
+        # User has auth'd via Github, now get access token for them 
+        if ACCESS_TOKEN and 'code' in self.request.url: 
+            self.redirect('/get-access-token')
+            return
+
+        # User is auth'd and member of organization, send them to product
+        if self.session.get('github_member'):
+            # Get the private repos of the Org
+            url = '/orgs/' + ORG  + '/repos'
+            results = super(MainClass, self).query(url)
+            repos = super(MainClass, self).sort_results(results, 
+                                                        'name', 'private')
+            page = 'index'
+            context = {"repos": repos}
+
+            super(MainClass, self).render(page, context)
+
 class DisplayToken(BaseHandler):
     """
     Display the access token to an authorized owner of the organization
@@ -49,11 +76,10 @@ class DisplayToken(BaseHandler):
 
     def get(self):
         # Template Settings
-        temp = 'login'
+        page = 'login'
         context = {"access_token": self.request.get('access_token')} 
 
-        super(DisplayToken, self).render(temp, context)
-
+        super(DisplayToken, self).render(page, context)
         
 class AccessDenied(BaseHandler):
     """
@@ -66,12 +92,10 @@ class AccessDenied(BaseHandler):
         # client.send('HTTP/1.0 403 Access Denied\r\n')
 
         # Template Settings
-        temp = 'templates/403.html'
+        page = '403.html'
         context = ''
 
-        template = JINJA_ENVIRONMENT.get_template(temp)
-        self.response.write(template.render(context))
-
+        super(AccessDenied, self).render(page, context)
 
 class CreateRepo(GhRequests):
     """
