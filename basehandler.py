@@ -65,19 +65,27 @@ class BaseHandler(webapp2.RequestHandler):
 
     def query(self, url, payload='', method='GET'):
         """Queries Github and returns the result of the request"""
-        
+ 
         # parse the url properly
         url = GITHUB_API_URL + url + ACCESS_TOKEN
 
         # if there is a payload, parse it
         if payload:
-            data = urllib.urlencode(payload)
+            data = json.dumps(payload)
 
-        if method in ('GET'):
+        # Build the urlfetch based on the HTTP request specified
+        if method in 'GET':
             result = urlfetch.fetch(url=url)
 
-        if method in ('POST', 'PUT', 'PATCH'):
-            result = urlfetch.fetch(url=url, payload=data, method=method)
+        if method in 'POST':
+            result = urlfetch.fetch(url=url, payload=data, method=urlfetch.POST)
+
+        if method in 'PUT':
+            result = urlfetch.fetch(url=url, payload=data, method=urlfetch.PUT)
+
+        if method in 'PATCH':
+            result = urlfetch.fetch(url=url, payload=data, 
+                                    method=urlfetch.PATCH)
 
         # Convert the result to something useable, if it exists
         if result.content:

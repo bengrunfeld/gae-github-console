@@ -106,6 +106,7 @@ class GetAccessTokenHandler(BaseHandler):
         if not users.get_current_user():
             # TODO: Maybe return a 403 here?
             self.error(403)
+            self.redirect('/403')
             return
 
         state = self.request.get('state')

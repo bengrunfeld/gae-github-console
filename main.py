@@ -87,37 +87,26 @@ class AccessDenied(BaseHandler):
     """
 
     def get(self):
-
-        # For later
-        # client.send('HTTP/1.0 403 Access Denied\r\n')
-
         # Template Settings
         page = '403.html'
         context = ''
 
         super(AccessDenied, self).render(page, context)
 
-class CreateRepo(GhRequests):
+class CreateRepo(BaseHandler):
     """
     Create a private repository
     """
 
     def post(self):
-        access_token = os.environ.get('ACCESS_TOKEN')
         fields = {
             "name": self.request.get('repo-name'),
             "description": self.request.get('repo-desc'),
             "private": True,
         }
-        url = 'https://api.github.com/orgs/' + os.environ.get('ORG') \
-            + '/repos?access_token=' + str(access_token)
-        data = json.dumps(fields)
-        urlfetch.fetch(
-            url=url,
-            payload=data,
-            method=urlfetch.POST,
-        )
 
+        url = '/orgs/' + ORG + '/repos' 
+        result = super(CreateRepo, self).query(url, fields, 'POST') 
         self.redirect('/')
 
 
