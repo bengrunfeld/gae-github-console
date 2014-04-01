@@ -14,7 +14,6 @@ import json
 import jinja2
 import webapp2
 
-from google.appengine.api import urlfetch
 from basehandler import BaseHandler
 from ghrequests import GhRequests
 
@@ -37,8 +36,8 @@ class MainClass(BaseHandler):
     def get(self):
 
         # Admin hasn't auth'd via Github yet
-        if not ACCESS_TOKEN and 'code' not in self.request.url: 
-            self.redirect('/get-auth-token') 
+        if not ACCESS_TOKEN and 'code' not in self.request.url:
+            self.redirect('/get-auth-token')
             return
 
         # Admin has successfully auth'd via Github, now get Access Token
@@ -52,22 +51,23 @@ class MainClass(BaseHandler):
             self.redirect('/get-auth-token')
             return
 
-        # User has auth'd via Github, now get access token for them 
-        if ACCESS_TOKEN and 'code' in self.request.url: 
+        # User has auth'd via Github, now get access token for them
+        if ACCESS_TOKEN and 'code' in self.request.url:
             self.redirect('/get-access-token')
             return
 
         # User is auth'd and member of organization, send them to product
         if self.session.get('github_member'):
             # Get the private repos of the Org
-            url = '/orgs/' + ORG  + '/repos'
+            url = '/orgs/' + ORG + '/repos'
             results = super(MainClass, self).query(url)
-            repos = super(MainClass, self).sort_results(results, 
+            repos = super(MainClass, self).sort_results(results,
                                                         'name', 'private')
             page = 'index'
             context = {"repos": repos}
 
             super(MainClass, self).render(page, context)
+
 
 class DisplayToken(BaseHandler):
     """
@@ -77,10 +77,11 @@ class DisplayToken(BaseHandler):
     def get(self):
         # Template Settings
         page = 'login'
-        context = {"access_token": self.request.get('access_token')} 
+        context = {"access_token": self.request.get('access_token')}
 
         super(DisplayToken, self).render(page, context)
-        
+
+
 class AccessDenied(BaseHandler):
     """
     User is not a member of the organization. Deny access
@@ -92,6 +93,7 @@ class AccessDenied(BaseHandler):
         context = ''
 
         super(AccessDenied, self).render(page, context)
+
 
 class CreateRepo(BaseHandler):
     """
@@ -105,8 +107,8 @@ class CreateRepo(BaseHandler):
             "private": True,
         }
 
-        url = '/orgs/' + ORG + '/repos' 
-        result = super(CreateRepo, self).query(url, fields, 'POST') 
+        url = '/orgs/' + ORG + '/repos'
+        super(CreateRepo, self).query(url, fields, 'POST')
         self.redirect('/')
 
 

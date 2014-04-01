@@ -52,9 +52,11 @@ def _user_is_org_member(access_token):
 
     return False
 
+
 def _user_is_org_admin(access_token):
     """Check if user is an admin of ORG"""
     pass
+
 
 def _get_access_token(auth_code):
     """Get an access token from an auth token."""
@@ -97,6 +99,7 @@ class GetAuthTokenHandler(webapp2.RequestHandler):
         }
         url = '{}?{}'.format(GITHUB_AUTH_URL, urllib.urlencode(request_params))
         self.redirect(url)
+
 
 class GetAccessTokenHandler(BaseHandler):
     """Convert the auth token supplied by github to an access token."""

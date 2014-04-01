@@ -12,11 +12,9 @@ import os
 
 import jinja2
 import json
-import urllib
 import webapp2
 
 from google.appengine.api import urlfetch
-from urlparse import parse_qs
 from webapp2_extras import sessions
 
 TEMPLATE_DIR = 'templates'
@@ -65,7 +63,7 @@ class BaseHandler(webapp2.RequestHandler):
 
     def query(self, url, payload='', method='GET'):
         """Queries Github and returns the result of the request"""
- 
+
         # parse the url properly
         url = GITHUB_API_URL + url + ACCESS_TOKEN
 
@@ -78,20 +76,21 @@ class BaseHandler(webapp2.RequestHandler):
             result = urlfetch.fetch(url=url)
 
         if method in 'POST':
-            result = urlfetch.fetch(url=url, payload=data, method=urlfetch.POST)
+            result = urlfetch.fetch(url=url, payload=data,
+                                    method=urlfetch.POST)
 
         if method in 'PUT':
             result = urlfetch.fetch(url=url, payload=data, method=urlfetch.PUT)
 
         if method in 'PATCH':
-            result = urlfetch.fetch(url=url, payload=data, 
+            result = urlfetch.fetch(url=url, payload=data,
                                     method=urlfetch.PATCH)
 
         # Convert the result to something useable, if it exists
         if result.content:
             response = json.loads(result.content)
         else:
-            response = False 
+            response = False
 
         return response
 
@@ -104,7 +103,7 @@ class BaseHandler(webapp2.RequestHandler):
         # Multiple conditions need to be set
         if attribute2:
             for result in results:
-                if (attribute in result and result[attribute] and 
+                if (attribute in result and result[attribute] and
                         attribute2 in result and result[attribute2]):
                     response.append(result[attribute])
 
@@ -116,12 +115,3 @@ class BaseHandler(webapp2.RequestHandler):
                 response.append(result[attribute])
 
         return response
-
-   
-
-    
-
-        print('RESPONSE:')
-        print(response)
-
-        return response 

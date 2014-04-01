@@ -22,8 +22,6 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 class GhRequests(BaseHandler):
 
-        
-
     def get_user(self):
         """Gets the username of a user and stores it in a session variable"""
 
