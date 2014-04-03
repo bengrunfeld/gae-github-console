@@ -108,13 +108,13 @@ class CreateRepo(BaseHandler):
         }
 
         url = '/orgs/' + ORG + '/repos'
-        super(CreateRepo, self).query(url, fields, 'POST')
+        super(CreateRepo, self).query(url, 'POST', fields)
         self.redirect('/')
 
 
 class GetData(BaseHandler):
     """
-    Get team and user data about a particular repository
+    Get team and user data about a particular private repository
     """
 
     def post(self):
@@ -169,66 +169,67 @@ class GetData(BaseHandler):
         self.response.out.write(response)
 
 
-class AddCollaborator(GhRequests):
+class AddTeam(BaseHandler):
     """
-    Add a collaborator to a repo
-    """
-
-    def post(self):
-
-        if (self.request.get('repo') and self.request.get('collaborator')):
-            repo = self.request.get('repo')
-            collaborator = self.request.get('collaborator')
-            super(
-                AddCollaborator,
-                self
-                ).add_collaborator_to_repo(collaborator, repo)
-
-
-class AddTeam(GhRequests):
-    """
-    Add repo access to a team
+    Add a team belonging to the organization to a private repository
     """
 
     def post(self):
         if (self.request.get('repo') and self.request.get('team_id')):
+
+            # Get the required info to perform the query
             repo = self.request.get('repo')
             team_id = self.request.get('team_id')
-            super(AddTeam, self).add_team(repo, team_id)
+
+            # Set the url            
+            url = '/teams/' + team_id + '/repos/' + ORG + '/' + repo
+ 
+            # Send the request
+            super(AddTeam, self).query(url, 'PUT')
 
 
-class RemoveTeam(GhRequests):
+class RemoveTeam(BaseHandler):
     """
-    Remove repo access from a team
+    Remove a team belonging to the organization from a private repository
     """
 
     def post(self):
         if (self.request.get('repo') and self.request.get('team_id')):
+
+            # Get the required info to perform the query
             repo = self.request.get('repo')
             team_id = self.request.get('team_id')
-            super(RemoveTeam, self).remove_team(repo, team_id)
+
+            # Set the url
+            url = '/teams/' + team_id + '/repos/' + ORG + '/' + repo 
+
+            # Send the request
+            super(RemoveTeam, self).query(url, 'DELETE')
 
 
-class EditTeam(GhRequests):
+class EditTeam(BaseHandler):
     """
-    Edit the access level of a team_collaborators
+    Edit the access level of a team. This will affect the access of a team to
+    all repositories, not just a single repository.
     """
 
     def post(self):
         if (self.request.get('team_id') and self.request.get('edit_type')
                 and self.request.get('team_name')):
-            team_id = self.request.get('team_id')
-            team_name = self.request.get('team_name')
-            edit_type = self.request.get('edit_type')
-            if 'admin' in edit_type:
-                return False
-            else:
-                super(EditTeam, self).edit_team(
-                    team_name,
-                    team_id,
-                    edit_type,
-                    )
 
+
+            # Get the required info to perform the query
+            fields = {
+                        "name": self.request.get('team_name'),
+                        "id": self.request.get('team_id'),
+                        "permission": self.request.get('edit_type'), 
+                     }
+
+            # Set the url
+            url = '/teams/' + fields['id']
+
+            # Send the request 
+            super(EditTeam, self).query(url, 'PATCH', fields) 
 
 class Logout(BaseHandler):
     """
@@ -254,7 +255,6 @@ application = webapp2.WSGIApplication([
     ('/403', AccessDenied),
     ('/create-repo', CreateRepo),
     ('/get-data', GetData),
-    ('/add-collaborator', AddCollaborator),
     ('/add-team', AddTeam),
     ('/remove-team', RemoveTeam),
     ('/edit-team', EditTeam),

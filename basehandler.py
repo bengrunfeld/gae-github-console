@@ -61,15 +61,20 @@ class BaseHandler(webapp2.RequestHandler):
         template = JINJA_ENVIRONMENT.get_template(template_name)
         self.response.write(template.render(context))
 
-    def query(self, url, payload='', method='GET'):
+    def query(self, url, method='GET', payload=''):
         """Queries Github and returns the result of the request"""
 
         # parse the url properly
         url = GITHUB_API_URL + url + ACCESS_TOKEN
 
+        # Set the result variable so to avoid UnboundLocalError
+        result = ''
+
         # if there is a payload, parse it
         if payload:
             data = json.dumps(payload)
+        else:
+            data = ''
 
         # Build the urlfetch based on the HTTP request specified
         if method in 'GET':
@@ -85,9 +90,14 @@ class BaseHandler(webapp2.RequestHandler):
         if method in 'PATCH':
             result = urlfetch.fetch(url=url, payload=data,
                                     method=urlfetch.PATCH)
+            print(data)
+        if method in 'DELETE':
+            result = urlfetch.fetch(url=url, payload=data,
+                                    method=urlfetch.DELETE)
+
 
         # Convert the result to something useable, if it exists
-        if result.content:
+        if result and result.content:
             response = json.loads(result.content)
         else:
             response = False
