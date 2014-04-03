@@ -61,7 +61,7 @@ class MainClass(BaseHandler):
             # Get the private repos of the Org
             url = '/orgs/' + ORG + '/repos'
             results = super(MainClass, self).query(url)
-            repos = super(MainClass, self).sort_results(results,
+            repos = super(MainClass, self).sort_results(results, 'multiple',
                                                         'name', 'private')
             page = 'index'
             context = {"repos": repos}
@@ -112,24 +112,38 @@ class CreateRepo(BaseHandler):
         self.redirect('/')
 
 
-class GetData(GhRequests):
+class GetData(BaseHandler):
     """
     Get team and user data about a particular repository
     """
 
     def post(self):
-        # Get collaborators for a specific repo
-        if self.request.get('repo'):
-            repo = self.request.get('repo')
-            members = super(GetData, self).get_organization_members()
-            teams = super(GetData, self).get_organization_teams()
-            team_collaborators = super(GetData, self).get_repo_teams(repo)
-        else:
-            members = ''
-            repo = ''
-            teams = ''
-            team_collaborators = ''
+        # No repo name exists, return to calling function 
+        if not self.request.get('repo'):
+            return
 
+        if self.request.get('repo'):
+
+            # Get the name of the repo that we want info on
+            repo = self.request.get('repo')
+
+            # Get all teams in the Org
+            url = '/orgs/' + ORG + '/teams'
+            results = super(GetData, self).query(url)
+            teams = super(GetData, self).sort_results(results, 'teams')
+ 
+            # Get all teams with access to the repo
+            url = '/repos/' + ORG + '/' + repo + '/teams'
+            results = super(GetData, self).query(url)
+            team_collaborators = super(GetData, self).sort_results(results,
+                                                                    'teams')
+
+            # Get all members in the Org
+            url = '/orgs/' + ORG + '/members'
+            results = super(GetData, self).query(url)
+            members = super(GetData, self).sort_results(results, 'single', 
+                                                        'login')
+            
         # Make a copy of all teams, as teams will be altered
         all_teams = dict(teams)
 

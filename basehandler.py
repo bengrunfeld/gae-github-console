@@ -94,24 +94,34 @@ class BaseHandler(webapp2.RequestHandler):
 
         return response
 
-    def sort_results(self, results, attribute, attribute2=''):
+    def sort_results(self, results, method, *attribute):
         """Sorts the results returned from a request"""
 
-        # Declare a dictionary to store the results
+        # If the result is a list of teams
+        if 'teams' in method:
+            teams = {}
+            for result in results:
+                if 'name' in result and result['name']:
+                    teams[result['name']] = (result['id'], 
+                                            result['permission'])
+            return teams
+
+        # Declare a dictionary to store the results of the following sorts
         response = []
 
         # Multiple conditions need to be set
-        if attribute2:
+        if 'multiple' in method:
             for result in results:
-                if (attribute in result and result[attribute] and
-                        attribute2 in result and result[attribute2]):
-                    response.append(result[attribute])
+                if (attribute[0] in result and result[attribute[0]] and
+                        attribute[1] in result and result[attribute[1]]):
+                    response.append(result[attribute[0]])
 
             return response
 
         # Only a single condition needs to be set
-        for result in results:
-            if self.request.get(attribute):
-                response.append(result[attribute])
+        if 'single' in method:
+            for result in results:
+                if attribute[0] in result and result[attribute[0]]:
+                    response.append(result[attribute[0]])
 
         return response
