@@ -120,8 +120,8 @@
                 <div class="modal-body">
                     <!-- Nav tabs -->
                     <ul class="nav nav-tabs edit-access-tabs">
-                        <li class="active"><a href="#teams" data-toggle="tab">Teams</a></li>
-                        <li><a href="#team-members" data-toggle="tab">Team Members</a></li>
+                        <li class="active"><a href="#teams" id="teams-toggle" data-toggle="tab">Teams</a></li>
+                        <li><a href="#team-members" id="team-members-toggle" data-toggle="tab">Team Members</a></li>
                     </ul>
 
                     <!-- Tab panes -->
@@ -142,7 +142,7 @@
                                 </div>
                                 <div class="panel-body">
                                     <select class="form-control list-all-teams">
-                                        <option selected="selected">Select a team...</option>
+                                        <option class="select-team" selected="selected">Select a team...</option>
                                     </select>
                                 </div>
                             </div>
@@ -152,8 +152,6 @@
                                     <h3 class="panel-title">Team Members</h3>
                                 </div>
                                 <ul class="list-group list-team-members">
-                                    <li class="list-group-item">mattcutts<button class="btn btn-danger btn-sm team-btn make-pull pull-right">Remove</button></li>
-                                    <li class="list-group-item">guido<button class="btn btn-danger btn-sm team-btn make-pull pull-right">Remove</button></li>
                                 </ul>                                
                             </div>
 
@@ -166,12 +164,14 @@
                                         <option disabled selected="selected">Select members...</option>
                                     </select>
                                 </div>
-                            </div>                            
+                            </div>
+                            <button type="button" class="btn btn-success add-team-members pull-right">Add</button>
+                            <div style="clear:both;"></div>                          
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-default edit-access-close" data-dismiss="modal">Close</button>
                 </div>
 
             </div>

@@ -1,10 +1,38 @@
 $(function(){
- 
+
     $('.edit-repo').click(get_data);
+
+    // Bind events
+    function bind_events() {
+        $('.add-team').click(add_team);
+        $('.remove-team').click(remove_team);
+        $('.make-admin').click(edit_team);
+        $('.make-push').click(edit_team);
+        $('.make-pull').click(edit_team);
+        $('.list-all-teams').change(change_team);
+        $('.add-team-members').click(add_team_members);
+    }
+
+
+    // Not working yet - refactor other code when it works later
+    function query(type, url, data, success_func, repo) {
+    
+        // Send to main.py
+        $.ajax({
+            type: type,
+            url: url,
+            data: data,
+            success: function(data) {
+                success_func(repo);
+            }
+        });
+    }
 
     //Pull all relevant data to populate the modal
     function get_data(repo_name){
         
+        // Set the repo name. If it's not passed as a param, 
+        // grab the repo name of the button that was clicked on
         var repo = typeof(repo_name) !== 'string' ? $(this).attr('value') : repo_name;
 
         // Place repo name as modal heading
@@ -71,19 +99,11 @@ $(function(){
                         }
                     }
 
+                    // Bind events once everything has loaded
                     bind_events();
                 }
             }
         });
-    }
-
-    // Bind click events to the buttons
-    function bind_events() {
-        $('.add-team').click(add_team);
-        $('.remove-team').click(remove_team);
-        $('.make-admin').click(edit_team);
-        $('.make-push').click(edit_team);
-        $('.make-pull').click(edit_team);
     }
 
     // Add a team to a repo
@@ -101,7 +121,7 @@ $(function(){
             url: "/add-team",
             data: { "repo" : repo, "team_id" : team_id },
             success: function(data) {
-                var repo_name = repo
+                var repo_name = repo;
                 get_data(repo_name);
             }
         });
@@ -122,7 +142,7 @@ $(function(){
             url: "/remove-team",
             data: { "repo" : repo, "team_id" : team_id },
             success: function(data) {
-                var repo_name = repo
+                var repo_name = repo;
                 get_data(repo_name);
             }
         });
@@ -149,9 +169,89 @@ $(function(){
             url: "/edit-team",
             data: { "team_id" : team_id, "team_name": team_name, "edit_type" : edit_type },
             success: function(data) {
-                var repo_name = repo
+                var repo_name = repo;
                 get_data(repo_name);
             }
         });
+    }
+
+    // Print all the members of a team
+    function change_team() {
+
+        // Get the repo name
+        var repo = $('.panel-repo-name').text();
+
+        // Send to main.py
+        $.ajax({
+            type: 'POST',
+            url: '/change-team',
+            data: { "team_id" : $('.list-all-teams').find('option:selected').attr('value') },
+            success: function(data) {
+                
+                // Parse the JSON
+                var team_members = JSON.parse(data);
+                var members = team_members['members'];
+
+                // Remove any previous results
+                $('.team-member').remove();
+
+                // List all team members of the selected team
+                if(members) {
+                    for(var i=0;i<members.length;i++){
+                        $('.list-team-members').append('<li class="list-group-item team-member">' + members[i] + '<button class="btn btn-danger btn-sm team-btn make-pull pull-right remove-member" value="' + members[i] + '">Remove</button></li>');
+                    }
+                }
+
+                // Set an event handler for the Remove buttons
+                $('.remove-member').click(remove_member);
+            }
+        });
+    }
+
+    // Add a member of the org to a team
+    function add_team_members() {
+
+        // Get the repo name
+        var repo = $('.panel-repo-name').text();
+        
+        // Get the team id
+        var team_id = $('.list-all-teams').find('option:selected').attr('value');
+
+        // Get the username
+        var users = $(".list-members option:selected").map(function(){ return this.value }).get().join(", ");
+
+        // Send to main.py
+        $.ajax({
+            type: "POST",
+            url: "/add-team-members",
+            data: { "team_id" : team_id, "users": users},
+            success: function(data) {
+                change_team();
+            }
+        });
+    }
+
+    // Remove a member of the org from a team
+    function remove_member() {
+
+        // Get the repo name
+        var repo = $('.panel-repo-name').text();
+
+        // Get the team id
+        var team_id = $('.list-all-teams').find('option:selected').attr('value');
+
+        // Get the user
+        var user = $(this).attr('value');
+
+        // Send to main.py
+        $.ajax({
+            type: "POST",
+            url: "/remove-team-member",
+            data: { "team_id" : team_id, "user": user},
+            success: function(data) {
+                change_team();
+            }
+        });
+
     }
 });

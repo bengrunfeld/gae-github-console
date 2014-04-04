@@ -137,7 +137,6 @@ class GetData(BaseHandler):
             results = super(GetData, self).query(url)
             team_collaborators = super(GetData, self).sort_results(results,
                                                                     'teams')
-
             # Get all members in the Org
             url = '/orgs/' + ORG + '/members'
             results = super(GetData, self).query(url)
@@ -231,6 +230,69 @@ class EditTeam(BaseHandler):
             # Send the request 
             super(EditTeam, self).query(url, 'PATCH', fields) 
 
+class AddTeamMembers(BaseHandler):
+
+    def post(self):
+
+        # Check that necessary values exist
+        if not self.request.get('users') and not self.request.get('team_id'):
+            return
+
+        # Get the necessary info to make the request
+        url = ('/teams/' + self.request.get('team_id') + '/members/' +  
+                self.request.get('users'))
+
+        # Make the request
+        super(AddTeamMembers, self).query(url, 'PUT')
+
+        return
+
+class ChangeTeam(BaseHandler):
+    """
+    Get team members when the selected team is changed
+    """
+
+    def post(self):
+        
+        # check that the necessary values exist 
+        if not self.request.get('team_id'):
+            return
+
+        # Get the info needed for the request
+        url = '/teams/' + self.request.get('team_id') + '/members'
+
+        # Send off the request and sort the results
+        results = super(ChangeTeam, self).query(url)
+        members = super(ChangeTeam, self).sort_results(results, 'single',
+                                                    'login')
+
+        # Craft the response into a JSON object and send it back
+        response = {'members': members}
+        team_members = json.dumps(response)
+        self.response.out.write(team_members)
+
+        return
+
+class RemoveTeamMember(BaseHandler):
+    """
+    Remove a member of the organization from a team
+    """
+
+    def post(self):
+
+        # Check that the necessary values exist
+        if not self.request.get('team_id') and not self.request.get('user'):
+            return
+
+        # DELETE /teams/:id/members/:user  
+        url = ('/teams/' + self.request.get('team_id') + '/members/' + 
+                self.request.get('user'))
+
+        # Send the request
+        super(RemoveTeamMember, self).query(url, 'DELETE')
+
+        return
+
 class Logout(BaseHandler):
     """
     Log a user out from their session
@@ -243,6 +305,7 @@ class Logout(BaseHandler):
 
         # Redirect to Github logout
         self.redirect('https://github.com/logout')
+
 
 
 config = {}
@@ -260,4 +323,7 @@ application = webapp2.WSGIApplication([
     ('/edit-team', EditTeam),
     ('/logout', Logout),
     ('/display_token.*', DisplayToken),
+    ('/change-team', ChangeTeam),
+    ('/add-team-members', AddTeamMembers),
+    ('/remove-team-member', RemoveTeamMember),
 ], config=config, debug=True)
