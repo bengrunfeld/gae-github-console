@@ -238,12 +238,20 @@ class AddTeamMembers(BaseHandler):
         if not self.request.get('users') and not self.request.get('team_id'):
             return
 
-        # Get the necessary info to make the request
-        url = ('/teams/' + self.request.get('team_id') + '/members/' +  
-                self.request.get('users'))
+        # Get users and team id
+        members = self.request.get('users')
+        team_id = self.request.get('team_id')
 
-        # Make the request
-        super(AddTeamMembers, self).query(url, 'PUT')
+        # Parse the list of members from JSON into a useable format
+        users = json.loads(members)
+
+        # Loop through the list of users and submit an add request for each
+        for user in users:
+            # Get the necessary info to make the request
+            url = '/teams/' + team_id + '/members/' + user
+
+            # Make the request
+            super(AddTeamMembers, self).query(url, 'PUT')
 
         return
 

@@ -217,8 +217,14 @@ $(function(){
         // Get the team id
         var team_id = $('.list-all-teams').find('option:selected').attr('value');
 
-        // Get the username
-        var users = $(".list-members option:selected").map(function(){ return this.value }).get().join(", ");
+        // Get the usernames
+        var members = [];
+
+        // Push members into a list of usernames
+        $(".list-members option:selected").map(function(){ members.push(this.value); });
+
+        // Prepare the array to be sent through the AJAX request
+        var users = JSON.stringify(members);
 
         // Send to main.py
         $.ajax({
