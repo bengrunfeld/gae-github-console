@@ -92,13 +92,6 @@ $(function(){
                         }
                     }
 
-                    //List all Members in the Org
-                    if(data.members) {
-                        for(var i=0;i<data.members.length;i++){
-                            $('.list-members').append('<option class="members" value="' + data.members[i] + '">' + data.members[i] + '</option>');
-                        }
-                    }
-
                     // Bind events once everything has loaded
                     bind_events();
                 }
@@ -189,21 +182,35 @@ $(function(){
             success: function(data) {
                 
                 // Parse the JSON
-                var team_members = JSON.parse(data);
-                var members = team_members['members'];
+                var members = JSON.parse(data);
+                var team_members = members['team_members'];
+                var all_members = members['all_members'];
 
                 // Remove any previous results
                 $('.team-member').remove();
 
                 // List all team members of the selected team
-                if(members) {
-                    for(var i=0;i<members.length;i++){
-                        $('.list-team-members').append('<li class="list-group-item team-member">' + members[i] + '<button class="btn btn-danger btn-sm team-btn make-pull pull-right remove-member" value="' + members[i] + '">Remove</button></li>');
+                if(team_members) {
+                    for(var i=0;i<team_members.length;i++){
+                        $('.list-team-members').append('<li class="list-group-item team-member">' + team_members[i] + '<button class="btn btn-danger btn-sm team-btn make-pull pull-right remove-member" value="' + team_members[i] + '">Remove</button></li>');
                     }
                 }
 
                 // Set an event handler for the Remove buttons
                 $('.remove-member').click(remove_member);
+
+                // Remove any previous results
+                $('.members').remove();
+
+                //List all Members in the Org
+                if(all_members) {
+                    for(var i=0;i<all_members.length;i++){
+                        if(jQuery.inArray(all_members[i], team_members) == -1) {
+                            $('.list-members').append('<option class="members" value="' + all_members[i] + '">' + all_members[i] + '</option>');
+                        }
+                    }
+                }
+
             }
         });
     }

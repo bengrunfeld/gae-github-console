@@ -137,12 +137,7 @@ class GetData(BaseHandler):
             results = super(GetData, self).query(url)
             team_collaborators = super(GetData, self).sort_results(results,
                                                                     'teams')
-            # Get all members in the Org
-            url = '/orgs/' + ORG + '/members'
-            results = super(GetData, self).query(url)
-            members = super(GetData, self).sort_results(results, 'single', 
-                                                        'login')
-            
+           
         # Make a copy of all teams, as teams will be altered
         all_teams = dict(teams)
 
@@ -159,7 +154,6 @@ class GetData(BaseHandler):
 
         # Build a JSON reponse
         resp = dict([
-                    ('members', members),
                     ('teams', teams),
                     ('all_teams', all_teams),
                     ('team_collaborators', team_collaborators)
@@ -271,13 +265,21 @@ class ChangeTeam(BaseHandler):
 
         # Send off the request and sort the results
         results = super(ChangeTeam, self).query(url)
-        members = super(ChangeTeam, self).sort_results(results, 'single',
+        team_members = super(ChangeTeam, self).sort_results(results, 'single',
                                                     'login')
 
+        # Get all members in the Org
+        url = '/orgs/' + ORG + '/members'
+
+        # Send off the request and sort the results
+        results = super(ChangeTeam, self).query(url)
+        all_members = super(ChangeTeam, self).sort_results(results, 'single', 
+                                                    'login')
+ 
         # Craft the response into a JSON object and send it back
-        response = {'members': members}
-        team_members = json.dumps(response)
-        self.response.out.write(team_members)
+        response = {'team_members': team_members, 'all_members': all_members}
+        members = json.dumps(response)
+        self.response.out.write(members)
 
         return
 
