@@ -30,8 +30,8 @@ handlers:
 # auth_fail_action: unauthorized
 
 env_variables:
-  CLIENT_ID: ${CLIENT_ID} 
+  CLIENT_ID: ${CLIENT_ID}
   CLIENT_SECRET: ${CLIENT_SECRET}
-  ORG: ${ORG} 
+  ORG: ${ORG}
   ACCESS_TOKEN: ${ACCESS_TOKEN}
   SESSION_SECRET: ${SESSION_SECRET}
