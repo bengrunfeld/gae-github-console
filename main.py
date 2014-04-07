@@ -15,7 +15,6 @@ import jinja2
 import webapp2
 
 from basehandler import BaseHandler
-from ghrequests import GhRequests
 
 ACCESS_TOKEN = os.environ.get('ACCESS_TOKEN')
 ORG = os.environ.get('ORG')
@@ -64,7 +63,7 @@ class MainClass(BaseHandler):
             repos = super(MainClass, self).sort_results(results, 'multiple',
                                                         'name', 'private')
             page = 'index'
-            context = {"repos": repos}
+            context = {"repos": repos, "username": self.session.get('login')}
 
             super(MainClass, self).render(page, context)
 
@@ -118,7 +117,7 @@ class GetData(BaseHandler):
     """
 
     def post(self):
-        # No repo name exists, return to calling function 
+        # No repo name exists, return to calling function
         if not self.request.get('repo'):
             return
 
@@ -131,13 +130,13 @@ class GetData(BaseHandler):
             url = '/orgs/' + ORG + '/teams'
             results = super(GetData, self).query(url)
             teams = super(GetData, self).sort_results(results, 'teams')
- 
+
             # Get all teams with access to the repo
             url = '/repos/' + ORG + '/' + repo + '/teams'
             results = super(GetData, self).query(url)
             team_collaborators = super(GetData, self).sort_results(results,
                                                                     'teams')
-           
+
         # Make a copy of all teams, as teams will be altered
         all_teams = dict(teams)
 
@@ -174,9 +173,9 @@ class AddTeam(BaseHandler):
             repo = self.request.get('repo')
             team_id = self.request.get('team_id')
 
-            # Set the url            
+            # Set the url
             url = '/teams/' + team_id + '/repos/' + ORG + '/' + repo
- 
+
             # Send the request
             super(AddTeam, self).query(url, 'PUT')
 
@@ -194,7 +193,7 @@ class RemoveTeam(BaseHandler):
             team_id = self.request.get('team_id')
 
             # Set the url
-            url = '/teams/' + team_id + '/repos/' + ORG + '/' + repo 
+            url = '/teams/' + team_id + '/repos/' + ORG + '/' + repo
 
             # Send the request
             super(RemoveTeam, self).query(url, 'DELETE')
@@ -210,19 +209,19 @@ class EditTeam(BaseHandler):
         if (self.request.get('team_id') and self.request.get('edit_type')
                 and self.request.get('team_name')):
 
-
             # Get the required info to perform the query
             fields = {
                         "name": self.request.get('team_name'),
                         "id": self.request.get('team_id'),
-                        "permission": self.request.get('edit_type'), 
+                        "permission": self.request.get('edit_type'),
                      }
 
             # Set the url
             url = '/teams/' + fields['id']
 
-            # Send the request 
-            super(EditTeam, self).query(url, 'PATCH', fields) 
+            # Send the request
+            super(EditTeam, self).query(url, 'PATCH', fields)
+
 
 class AddTeamMembers(BaseHandler):
 
@@ -249,14 +248,15 @@ class AddTeamMembers(BaseHandler):
 
         return
 
+
 class ChangeTeam(BaseHandler):
     """
     Get team members when the selected team is changed
     """
 
     def post(self):
-        
-        # check that the necessary values exist 
+
+        # check that the necessary values exist
         if not self.request.get('team_id'):
             return
 
@@ -273,15 +273,16 @@ class ChangeTeam(BaseHandler):
 
         # Send off the request and sort the results
         results = super(ChangeTeam, self).query(url)
-        all_members = super(ChangeTeam, self).sort_results(results, 'single', 
+        all_members = super(ChangeTeam, self).sort_results(results, 'single',
                                                     'login')
- 
+
         # Craft the response into a JSON object and send it back
         response = {'team_members': team_members, 'all_members': all_members}
         members = json.dumps(response)
         self.response.out.write(members)
 
         return
+
 
 class RemoveTeamMember(BaseHandler):
     """
@@ -294,14 +295,15 @@ class RemoveTeamMember(BaseHandler):
         if not self.request.get('team_id') and not self.request.get('user'):
             return
 
-        # DELETE /teams/:id/members/:user  
-        url = ('/teams/' + self.request.get('team_id') + '/members/' + 
+        # DELETE /teams/:id/members/:user
+        url = ('/teams/' + self.request.get('team_id') + '/members/' +
                 self.request.get('user'))
 
         # Send the request
         super(RemoveTeamMember, self).query(url, 'DELETE')
 
         return
+
 
 class Logout(BaseHandler):
     """
@@ -315,8 +317,6 @@ class Logout(BaseHandler):
 
         # Redirect to Github logout
         self.redirect('https://github.com/logout')
-
-
 
 config = {}
 config['webapp2_extras.sessions'] = {

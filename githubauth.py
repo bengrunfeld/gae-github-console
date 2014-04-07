@@ -28,6 +28,7 @@ GITHUB_AUTH_URL = 'https://github.com/login/oauth/authorize'
 GITHUB_ACCESS_URL = 'https://github.com/login/oauth/access_token'
 GITHUB_ORGS_URL = 'https://api.github.com/user/orgs'
 GITHUB_CHECK_USER = 'https://api.github.com/user'
+GITHUB_API_URL = 'https://api.github.com'
 
 # Get the redirect URLs for our own application.
 APP_ROOT = 'http://{}'.format(os.environ['HTTP_HOST'])
@@ -36,6 +37,9 @@ DISPLAY_ACCESS_TOKEN_URL = '{}/get-access-token/'.format(APP_ROOT)
 
 # Get the Access Token, if it exists
 ACCESS_TOKEN = os.environ.get('ACCESS_TOKEN')
+
+# Get the Organization name
+ORG = os.environ.get('ORG')
 
 
 def _user_is_org_member(access_token):
@@ -54,8 +58,19 @@ def _user_is_org_member(access_token):
 
 
 def _user_is_org_admin(access_token):
-    """Check if user is an admin of ORG"""
-    pass
+    """Check if user is an admin of the organization"""
+
+    # Get a list of teams
+    url = (GITHUB_API_URL + '/orgs/' + ORG + '/teams?access_token='
+            + access_token)
+
+    result = urlfetch.fetch(url)
+
+    # Check if user belongs to the Owners team, meaning that are an Org admin
+    if 'Owners' in result.content:
+        return True
+    else:
+        return False
 
 
 def _get_access_token(auth_code):
@@ -116,6 +131,7 @@ class GetAccessTokenHandler(BaseHandler):
         if not state or not memcache.get(state):
             # TODO: What to do here?
             self.error(403)
+            self.redirect('/403')
             return
 
         memcache.delete(state)
@@ -131,6 +147,13 @@ class GetAccessTokenHandler(BaseHandler):
         if not _user_is_org_member(access_token):
              # TODO: Maybe this could be better?
             self.error(403)
+            self.redirect('/403')
+            return
+
+        if not _user_is_org_admin(access_token) and not ACCESS_TOKEN:
+            # App not set up and user is not an admin of the org, deny access
+            self.error(403)
+            self.redirect('/403')
             return
 
         if not os.environ.get('ACCESS_TOKEN'):
@@ -142,6 +165,12 @@ class GetAccessTokenHandler(BaseHandler):
         # TODO: Probably need to set the user name or something here.
         # TODO: This probably needs to inherit from BaseHandler for this to
         # work correctly.
+        url = '/user?access_token=' + access_token
+        result = super(GetAccessTokenHandler, self).query(url)
+
+        # Make sure you delete this
+        self.session['login'] = result['login']
+
         self.session['github_member'] = True
         self.redirect('/')
         return

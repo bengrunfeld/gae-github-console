@@ -21,7 +21,7 @@ TEMPLATE_DIR = 'templates'
 TEMPLATE_SUFFIX = '.html'
 
 GITHUB_API_URL = 'https://api.github.com'
-ACCESS_TOKEN = '?access_token=' + os.environ.get('ACCESS_TOKEN')
+ACCESS_TOKEN = os.environ.get('ACCESS_TOKEN')
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -64,8 +64,12 @@ class BaseHandler(webapp2.RequestHandler):
     def query(self, url, method='GET', payload=''):
         """Queries Github and returns the result of the request"""
 
-        # parse the url properly
-        url = GITHUB_API_URL + url + ACCESS_TOKEN
+        # If access_token is in the url, then the request is for a
+        # specific user, otherwise, the default admin is being used
+        if not 'access_token' in url:
+            url = GITHUB_API_URL + url + '?access_token=' + ACCESS_TOKEN
+        else:
+            url = GITHUB_API_URL + url
 
         # Set the result variable so to avoid UnboundLocalError
         result = ''
@@ -95,7 +99,6 @@ class BaseHandler(webapp2.RequestHandler):
             result = urlfetch.fetch(url=url, payload=data,
                                     method=urlfetch.DELETE)
 
-
         # Convert the result to something useable, if it exists
         if result and result.content:
             response = json.loads(result.content)
@@ -112,7 +115,7 @@ class BaseHandler(webapp2.RequestHandler):
             teams = {}
             for result in results:
                 if 'name' in result and result['name']:
-                    teams[result['name']] = (result['id'], 
+                    teams[result['name']] = (result['id'],
                                             result['permission'])
             return teams
 
