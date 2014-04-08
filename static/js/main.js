@@ -1,6 +1,7 @@
 $(function(){
 
     $('.edit-repo').click(get_data);
+    $('.display-logs').click(display_logs);
 
     // Bind events
     function bind_events() {
@@ -197,7 +198,7 @@ $(function(){
 
                 // List all team members of the selected team
                 if(team_members) {
-                    for(var i=0;i<team_members.length;i++){
+                    for(var i=0; i<team_members.length; i++){
                         $('.list-team-members').append('<li class="list-group-item team-member">' + team_members[i] + '<button class="btn btn-danger btn-sm team-btn make-pull pull-right remove-member" value="' + team_members[i] + '">Remove</button></li>');
                     }
                 }
@@ -210,7 +211,7 @@ $(function(){
 
                 //List all Members in the Org
                 if(all_members) {
-                    for(var i=0;i<all_members.length;i++){
+                    for(var i=0; i<all_members.length; i++){
                         if(jQuery.inArray(all_members[i], team_members) == -1) {
                             $('.list-members').append('<option class="members" value="' + all_members[i] + '">' + all_members[i] + '</option>');
                         }
@@ -271,6 +272,26 @@ $(function(){
                 change_team();
             }
         });
+    }
 
+    // Display most recent logs
+    function display_logs() {
+
+        // Activate the log script in main.py
+        $.ajax({
+            type: "POST",
+            url: "/display-logs",
+            data: { "number_of_posts": "10" },
+            success: function(data) {
+                // Populate modal here
+                logs = JSON.parse(data);
+
+                $('.list-log-item').remove();
+
+                for(var i=0; i<logs.length; i++){
+                    $('.list-logs').append('<li class="list-group-item list-log-item">' + logs[i] + '</li>')
+                }
+            }
+        });
     }
 });

@@ -111,7 +111,10 @@ class BaseHandler(webapp2.RequestHandler):
         return response
 
     def sort_results(self, results, method, *attribute):
-        """Sorts the results returned from a request"""
+        """
+        Sorts the results returned from a request. attribute specifies
+        what you are testing for and trying to get out of the result.
+        """
 
         # If the result is a list of teams
         if 'teams' in method:
@@ -143,9 +146,10 @@ class BaseHandler(webapp2.RequestHandler):
         return response
 
     def log(self, message):
-        """Create a log for any issue relating to security"""
+        """Create a log for any action that causes a change"""
 
         # Create a Log object and then store it to ndb
         log = Log(content=message)
         log_key = log.put()
+
         return

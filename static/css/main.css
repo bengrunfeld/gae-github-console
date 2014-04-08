@@ -26,8 +26,20 @@ a { text-decoration: none !important; }
 
 .list-collaborators, .list-teams { height: 165px; overflow-y: auto; }
 
+.list-logs { overflow: scroll; height: 304px;}
+
 .member-btn, .team-btn { position: relative; bottom:4px; margin-left:10px; width:88px; }
 
 .remove-team { margin-left:20px; }
 
 .permission { font-style:italic; font-weight:bold; color:#3e3e3e; font-size:12px; }
+
+.logs-date { width:100px; margin-left:10px; float:left; }
+
+.logs-time { width:80px; margin-left:10px; float:left; }
+
+.from-date, .to-date { margin-bottom:30px; }
+
+.from-date-month, .to-date-month { margin-left:0 !important; }
+
+.add-date-filter { margin-left: 10px;}

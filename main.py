@@ -5,6 +5,7 @@ Contains classes and functions that trigger the API actions in GhRequests
 
 import os
 import sys
+import datetime
 
 LIB_PATH = os.path.join(os.getcwd(), 'lib')
 if LIB_PATH not in sys.path:
@@ -15,6 +16,7 @@ import jinja2
 import webapp2
 
 from basehandler import BaseHandler
+from model import Log
 
 ACCESS_TOKEN = os.environ.get('ACCESS_TOKEN')
 ORG = os.environ.get('ORG')
@@ -377,6 +379,49 @@ class RemoveTeamMember(BaseHandler):
 
         return
 
+class DisplayLogs(BaseHandler):
+    """
+    Display a set number of the most recent logs
+    """
+
+    def post(self):
+
+        # Construct a from-date and a to-date
+        from_datetime = self.request.get('from_date')
+        to_datetime = self.request.get('to_date')
+
+        # Example of correct formatting of datetime
+        # from_value = datetime.datetime(2014, 4, 8, 18, 17, 29)
+        # to_value = datetime.datetime(2014, 4, 8, 18, 17, 34)
+
+
+        # If a datetime filter exists, query ndb for that
+        if from_datetime and to_datetime:
+            qry = Log.query(Log.datetime > from_datetime, 
+                            Log.datetime < to_datetime).order(-Log.datetime)
+        else:
+            # No datetime filter exists, perform regular 
+            qry = Log.query().order(-Log.datetime)
+
+        # Now go and fetch the results
+        results = qry.fetch(int(self.request.get('number_of_posts')))
+
+        # Create a dictionary to store the response
+        response = []
+
+        # Perform a custom sort that concatenates content to datetime
+        for result in results:
+            if result.datetime and result.content:
+                response.append(str(result.datetime) + ' ' + result.content) 
+
+        # Dump the response out as JSON
+        response = json.dumps(response)
+
+        # Send the result of the query back to the AJAX calling it
+        self.response.out.write(response)
+
+        return
+
 
 class Logout(BaseHandler):
     """
@@ -409,4 +454,5 @@ application = webapp2.WSGIApplication([
     ('/change-team', ChangeTeam),
     ('/add-team-members', AddTeamMembers),
     ('/remove-team-member', RemoveTeamMember),
+    ('/display-logs', DisplayLogs),
 ], config=config, debug=True)
