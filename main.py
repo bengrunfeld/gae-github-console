@@ -92,7 +92,8 @@ class AccessDenied(BaseHandler):
         context = ''
 
         super(AccessDenied, self).render(page, context)
-
+        
+        super(AccessDenied, self).log('Access was denied to user')
 
 class CreateRepo(BaseHandler):
     """
@@ -107,8 +108,27 @@ class CreateRepo(BaseHandler):
         }
 
         url = '/orgs/' + ORG + '/repos'
-        super(CreateRepo, self).query(url, 'POST', fields)
+
+        if super(CreateRepo, self).query(url, 'POST', fields):
+
+            # Construct the log message
+            message = self.session.get('login')
+            message += ' created a private repo named: '
+            message += self.request.get('repo-name')
+     
+            super(CreateRepo, self).log(message)
+
+            # Add default teams here. Replicate the code for multiple teams
+            url = '/add-team'
+            fields = {
+                "repo": self.request.get('repo-name'),
+                # "team_id": place team id here
+            } 
+
+            super(CreateRepo, self).query(url, 'POST', fields)
+
         self.redirect('/')
+        return
 
 
 class GetData(BaseHandler):
@@ -177,7 +197,16 @@ class AddTeam(BaseHandler):
             url = '/teams/' + team_id + '/repos/' + ORG + '/' + repo
 
             # Send the request
-            super(AddTeam, self).query(url, 'PUT')
+            if super(AddTeam, self).query(url, 'PUT'):
+
+                # Construct the log message
+                message = self.session.get('login')
+                message += ' added team: '
+                message += self.request.get('team_name')
+                message += ' to repo: '
+                message += self.request.get('repo')
+         
+                super(AddTeam, self).log(message)
 
 
 class RemoveTeam(BaseHandler):
@@ -195,8 +224,19 @@ class RemoveTeam(BaseHandler):
             # Set the url
             url = '/teams/' + team_id + '/repos/' + ORG + '/' + repo
 
-            # Send the request
-            super(RemoveTeam, self).query(url, 'DELETE')
+            # Remove the team from the repo 
+            if super(RemoveTeam, self).query(url, 'DELETE'):
+            
+                # Construct the log message
+                message = self.session.get('login')
+                message += ' removed team: '
+                message += self.request.get('team_name')
+                message += ' from repo: '
+                message += repo 
+         
+                super(RemoveTeam, self).log(message)
+
+            return
 
 
 class EditTeam(BaseHandler):
@@ -219,14 +259,27 @@ class EditTeam(BaseHandler):
             # Set the url
             url = '/teams/' + fields['id']
 
-            # Send the request
-            super(EditTeam, self).query(url, 'PATCH', fields)
+            # Edit the team's access 
+            if super(EditTeam, self).query(url, 'PATCH', fields):
+
+                # Construct the log message
+                message = self.session.get('login')
+                message += ' edited the access of team: '
+                message += self.request.get('team_name')
+                message += ' to have the access level of: '
+                message += self.request.get('edit_type')
+         
+                super(EditTeam, self).log(message)
+
+            return
 
 
 class AddTeamMembers(BaseHandler):
+    """
+    Add members of the organization to a specific team
+    """
 
     def post(self):
-
         # Check that necessary values exist
         if not self.request.get('users') and not self.request.get('team_id'):
             return
@@ -240,18 +293,29 @@ class AddTeamMembers(BaseHandler):
 
         # Loop through the list of users and submit an add request for each
         for user in users:
+
             # Get the necessary info to make the request
             url = '/teams/' + team_id + '/members/' + user
 
-            # Make the request
-            super(AddTeamMembers, self).query(url, 'PUT')
+            # Add member to team 
+            if super(AddTeamMembers, self).query(url, 'PUT'):
+                
+                # Construct the log message
+                message = self.session.get('login')
+                message += ' added team member: '
+                message += user 
+                message += ' to team: '
+                message += self.request.get('team_id')
+         
+                super(AddTeamMembers, self).log(message)
 
         return
 
 
 class ChangeTeam(BaseHandler):
     """
-    Get team members when the selected team is changed
+    Print all the members of a team when a user chooses a different team to 
+    edit in the Team Members tab
     """
 
     def post(self):
@@ -286,7 +350,7 @@ class ChangeTeam(BaseHandler):
 
 class RemoveTeamMember(BaseHandler):
     """
-    Remove a member of the organization from a team
+    Remove a team member from a team
     """
 
     def post(self):
@@ -299,8 +363,17 @@ class RemoveTeamMember(BaseHandler):
         url = ('/teams/' + self.request.get('team_id') + '/members/' +
                 self.request.get('user'))
 
-        # Send the request
-        super(RemoveTeamMember, self).query(url, 'DELETE')
+        # Remove a team member from the team 
+        if super(RemoveTeamMember, self).query(url, 'DELETE'):
+
+            # Construct the log message
+            message = self.session.get('login')
+            message += ' removed team member: '
+            message += user 
+            message += ' from team: '
+            message += self.request.get('team_id')
+
+            super(AddTeamMembers, self).log(message)
 
         return
 
@@ -312,7 +385,7 @@ class Logout(BaseHandler):
 
     def get(self):
 
-        # Delete all session variables
+        # Log the user out of the app 
         self.session.clear()
 
         # Redirect to Github logout

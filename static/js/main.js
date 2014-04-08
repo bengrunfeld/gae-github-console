@@ -56,7 +56,7 @@ $(function(){
                     // Print out all the teams in the org, as long as they are not assigned to a repo
                     if(data.teams) {
                         for(var key in data.teams){
-                            $('.list-teams').append('<li class="list-group-item teams"><span class="team">' + key + '<span class="permission"> (' + data.teams[key][1] + ')</span>' + '</span><button type="button" class="btn btn-success btn-sm team-btn add-team pull-right" id="' + data.teams[key] + '">Add Team</button></li>');
+                            $('.list-teams').append('<li class="list-group-item teams"><span class="team">' + key + '<span class="permission"> (' + data.teams[key][1] + ')</span>' + '</span><button type="button" class="btn btn-success btn-sm team-btn add-team pull-right" id="' + data.teams[key] + '" name="' + key + '">Add Team</button></li>');
                         }
                     }
 
@@ -64,8 +64,8 @@ $(function(){
                     if(data.team_collaborators) {
                         for(var key in data.team_collaborators){
                             permission = data.team_collaborators[key][1]
-                            var content = '<li class="list-group-item team_collaborators"><span class="team_collaborator">' + key + '<span class="permission"> (' + data.team_collaborators[key][1] + ')</span>' + '</span>';
-                            content += '<button type="button" id="' + data.team_collaborators[key][0] + '" class="close remove-team" aria-hidden="true">&times;</button>';
+                            var content = '<li class="list-group-item team_collaborators"><span class="team_collaborator" name="' + key + '">' + key + '<span class="permission"> (' + data.team_collaborators[key][1] + ')</span>' + '</span>';
+                            content += '<button type="button" id="' + data.team_collaborators[key][0] + '" class="close remove-team" name="' + key + '" aria-hidden="true">&times;</button>';
 
                             switch(permission) {
                                 case "admin":
@@ -108,11 +108,14 @@ $(function(){
         // Get the team id
         var team_id = $(this).attr('id');
 
+        // Get the team name
+        var team_name = $(this).attr('name');
+
         // Give the team Push Access
         $.ajax({
             type: "POST",
             url: "/add-team",
-            data: { "repo" : repo, "team_id" : team_id },
+            data: { "repo": repo, "team_id": team_id, "team_name": team_name },
             success: function(data) {
                 var repo_name = repo;
                 get_data(repo_name);
@@ -129,11 +132,14 @@ $(function(){
         // Get the team id
         var team_id = $(this).attr('id');
 
+        // Get the team name
+        var team_name = $(this).attr('name');
+
         // Give the team Push Access
         $.ajax({
             type: "POST",
             url: "/remove-team",
-            data: { "repo" : repo, "team_id" : team_id },
+            data: { "repo": repo, "team_id": team_id, "team_name": team_name },
             success: function(data) {
                 var repo_name = repo;
                 get_data(repo_name);
@@ -168,7 +174,7 @@ $(function(){
         });
     }
 
-    // Print all the members of a team
+    // Print all the members of a team when a user chooses a different team to edit in the Team Members tab
     function change_team() {
 
         // Get the repo name

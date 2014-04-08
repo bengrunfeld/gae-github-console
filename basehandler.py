@@ -9,6 +9,7 @@ The Jinja2 environment is also set up here.
 """
 
 import os
+import datetime
 
 import jinja2
 import json
@@ -16,6 +17,8 @@ import webapp2
 
 from google.appengine.api import urlfetch
 from webapp2_extras import sessions
+
+from model import Log
 
 TEMPLATE_DIR = 'templates'
 TEMPLATE_SUFFIX = '.html'
@@ -103,7 +106,7 @@ class BaseHandler(webapp2.RequestHandler):
         if result and result.content:
             response = json.loads(result.content)
         else:
-            response = False
+            response = 'No result returned' 
 
         return response
 
@@ -138,3 +141,11 @@ class BaseHandler(webapp2.RequestHandler):
                     response.append(result[attribute[0]])
 
         return response
+
+    def log(self, message):
+        """Create a log for any issue relating to security"""
+
+        # Create a Log object and then store it to ndb
+        log = Log(content=message)
+        log_key = log.put()
+        return
