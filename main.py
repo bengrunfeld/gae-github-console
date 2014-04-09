@@ -5,7 +5,8 @@ Contains classes and functions that trigger the API actions in GhRequests
 
 import os
 import sys
-import datetime
+
+from datetime import datetime
 
 LIB_PATH = os.path.join(os.getcwd(), 'lib')
 if LIB_PATH not in sys.path:
@@ -94,8 +95,9 @@ class AccessDenied(BaseHandler):
         context = ''
 
         super(AccessDenied, self).render(page, context)
-        
+
         super(AccessDenied, self).log('Access was denied to user')
+
 
 class CreateRepo(BaseHandler):
     """
@@ -117,7 +119,7 @@ class CreateRepo(BaseHandler):
             message = self.session.get('login')
             message += ' created a private repo named: '
             message += self.request.get('repo-name')
-     
+
             super(CreateRepo, self).log(message)
 
             # Add default teams here. Replicate the code for multiple teams
@@ -125,7 +127,7 @@ class CreateRepo(BaseHandler):
             fields = {
                 "repo": self.request.get('repo-name'),
                 # "team_id": place team id here
-            } 
+            }
 
             super(CreateRepo, self).query(url, 'POST', fields)
 
@@ -157,7 +159,7 @@ class GetData(BaseHandler):
             url = '/repos/' + ORG + '/' + repo + '/teams'
             results = super(GetData, self).query(url)
             team_collaborators = super(GetData, self).sort_results(results,
-                                                                    'teams')
+                                                                   'teams')
 
         # Make a copy of all teams, as teams will be altered
         all_teams = dict(teams)
@@ -207,7 +209,7 @@ class AddTeam(BaseHandler):
                 message += self.request.get('team_name')
                 message += ' to repo: '
                 message += self.request.get('repo')
-         
+
                 super(AddTeam, self).log(message)
 
 
@@ -226,16 +228,16 @@ class RemoveTeam(BaseHandler):
             # Set the url
             url = '/teams/' + team_id + '/repos/' + ORG + '/' + repo
 
-            # Remove the team from the repo 
+            # Remove the team from the repo
             if super(RemoveTeam, self).query(url, 'DELETE'):
-            
+
                 # Construct the log message
                 message = self.session.get('login')
                 message += ' removed team: '
                 message += self.request.get('team_name')
                 message += ' from repo: '
-                message += repo 
-         
+                message += repo
+
                 super(RemoveTeam, self).log(message)
 
             return
@@ -253,15 +255,15 @@ class EditTeam(BaseHandler):
 
             # Get the required info to perform the query
             fields = {
-                        "name": self.request.get('team_name'),
-                        "id": self.request.get('team_id'),
-                        "permission": self.request.get('edit_type'),
-                     }
+                "name": self.request.get('team_name'),
+                "id": self.request.get('team_id'),
+                "permission": self.request.get('edit_type'),
+            }
 
             # Set the url
             url = '/teams/' + fields['id']
 
-            # Edit the team's access 
+            # Edit the team's access
             if super(EditTeam, self).query(url, 'PATCH', fields):
 
                 # Construct the log message
@@ -270,7 +272,7 @@ class EditTeam(BaseHandler):
                 message += self.request.get('team_name')
                 message += ' to have the access level of: '
                 message += self.request.get('edit_type')
-         
+
                 super(EditTeam, self).log(message)
 
             return
@@ -299,16 +301,16 @@ class AddTeamMembers(BaseHandler):
             # Get the necessary info to make the request
             url = '/teams/' + team_id + '/members/' + user
 
-            # Add member to team 
+            # Add member to team
             if super(AddTeamMembers, self).query(url, 'PUT'):
-                
+
                 # Construct the log message
                 message = self.session.get('login')
                 message += ' added team member: '
-                message += user 
+                message += user
                 message += ' to team: '
                 message += self.request.get('team_id')
-         
+
                 super(AddTeamMembers, self).log(message)
 
         return
@@ -316,7 +318,7 @@ class AddTeamMembers(BaseHandler):
 
 class ChangeTeam(BaseHandler):
     """
-    Print all the members of a team when a user chooses a different team to 
+    Print all the members of a team when a user chooses a different team to
     edit in the Team Members tab
     """
 
@@ -332,7 +334,7 @@ class ChangeTeam(BaseHandler):
         # Send off the request and sort the results
         results = super(ChangeTeam, self).query(url)
         team_members = super(ChangeTeam, self).sort_results(results, 'single',
-                                                    'login')
+                                                            'login')
 
         # Get all members in the Org
         url = '/orgs/' + ORG + '/members'
@@ -340,7 +342,7 @@ class ChangeTeam(BaseHandler):
         # Send off the request and sort the results
         results = super(ChangeTeam, self).query(url)
         all_members = super(ChangeTeam, self).sort_results(results, 'single',
-                                                    'login')
+                                                           'login')
 
         # Craft the response into a JSON object and send it back
         response = {'team_members': team_members, 'all_members': all_members}
@@ -363,15 +365,15 @@ class RemoveTeamMember(BaseHandler):
 
         # DELETE /teams/:id/members/:user
         url = ('/teams/' + self.request.get('team_id') + '/members/' +
-                self.request.get('user'))
+               self.request.get('user'))
 
-        # Remove a team member from the team 
+        # Remove a team member from the team
         if super(RemoveTeamMember, self).query(url, 'DELETE'):
 
             # Construct the log message
             message = self.session.get('login')
             message += ' removed team member: '
-            message += user 
+            message += self.request.get('user')
             message += ' from team: '
             message += self.request.get('team_id')
 
@@ -379,35 +381,43 @@ class RemoveTeamMember(BaseHandler):
 
         return
 
+
 class DisplayLogs(BaseHandler):
     """
     Display a set number of the most recent logs
     """
 
     def post(self):
-
-        print(self.request.get('from_date'))
-
         # Construct a from-date and a to-date
-        if self.request.get('from_date'):
-            from_datetime = datetime.datetime(self.request.get('from_date'))
+        if 'false' not in self.request.get('from_date'):
+            from_date = json.loads(self.request.get('from_date'))
+            from_dt = from_date['values']
         else:
+            from_date = False
             from_datetime = False
 
-        if self.request.get('to_date'):
-            to_datetime = datetime.datetime(self.request.get('to_date'))
+        if 'false' not in self.request.get('to_date'):
+            to_date = json.loads(self.request.get('to_date'))
+            to_dt = to_date['values']
         else:
+            to_date = False
             to_datetime = False
 
-        # Example of correct formatting of datetime
-        # from_value = datetime.datetime(2014, 4, 8, 18, 17, 29)
-        # to_value = datetime.datetime(2014, 4, 8, 18, 17, 34)
+        if from_date:
+            from_datetime = datetime(from_dt[0], from_dt[1], from_dt[2],
+                                     from_dt[3], from_dt[4])
+            print(from_datetime)
+        if to_date:
+            to_datetime = datetime(to_dt[0], to_dt[1], to_dt[2], to_dt[3],
+                                   to_dt[4])
+            print(to_datetime)
 
         # Check which filters exist, then query ndb based on that
         if from_datetime and to_datetime:
             # Both filters exist
-            qry = Log.query(Log.datetime > from_datetime, 
+            qry = Log.query(Log.datetime > from_datetime,
                             Log.datetime < to_datetime).order(-Log.datetime)
+            print('Both filters exist')
         elif from_datetime:
             # A from_datetime filter exists
             qry = Log.query(Log.datetime > from_datetime).order(-Log.datetime)
@@ -415,7 +425,7 @@ class DisplayLogs(BaseHandler):
             # A to_datetime filter exists
             qry = Log.query(Log.datetime < to_datetime).order(-Log.datetime)
         else:
-            # No datetime filter exists, perform regular query 
+            # No datetime filter exists, perform regular query
             qry = Log.query().order(-Log.datetime)
 
         # Now go and fetch the results
@@ -427,7 +437,7 @@ class DisplayLogs(BaseHandler):
         # Perform a custom sort that concatenates content to datetime
         for result in results:
             if result.datetime and result.content:
-                response.append(str(result.datetime) + ' ' + result.content) 
+                response.append(str(result.datetime) + ' ' + result.content)
 
         # Dump the response out as JSON
         response = json.dumps(response)
@@ -445,7 +455,7 @@ class Logout(BaseHandler):
 
     def get(self):
 
-        # Log the user out of the app 
+        # Log the user out of the app
         self.session.clear()
 
         # Redirect to Github logout

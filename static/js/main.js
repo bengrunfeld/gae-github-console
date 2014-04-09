@@ -280,8 +280,8 @@ $(function(){
     function display_logs(event, from_datetime, to_datetime) {
 
         // If params are not set, set them as empty. `false` does not translate well into python
-        var from_date = typeof(from_datetime) == 'undefined' ? '' : from_datetime;
-        var to_date = typeof(to_datetime) == 'undefined' ? '' : to_datetime;
+        var from_date = typeof(from_datetime) == ('undefined' || false) ? false : JSON.stringify(from_datetime);
+        var to_date = typeof(to_datetime) == ('undefined' || false) ? false : JSON.stringify(to_datetime);
 
         // Activate the log script in main.py
         $.ajax({
@@ -309,16 +309,16 @@ $(function(){
         to_date_set = true;
 
         // Load `from` fields into vars for more intuitive processing
+        from_year = $('.from-date-year option:selected').text();
         from_month = $('.from-date-month option:selected').text();
         from_day = $('.from-date-day option:selected').text();
-        from_year = $('.from-date-year option:selected').text();
         from_hour = $('.from-date-hour option:selected').text();
         from_minute = $('.from-date-minute option:selected').text();
 
         // Load `to` fields into vars for more intuitive processing
+        to_year = $('.to-date-year option:selected').text();
         to_month = $('.to-date-month option:selected').text();
         to_day = $('.to-date-day option:selected').text();
-        to_year = $('.to-date-year option:selected').text();
         to_hour = $('.to-date-hour option:selected').text();
         to_minute = $('.to-date-minute option:selected').text();
 
@@ -338,45 +338,40 @@ $(function(){
 
         // If all `from` fields are filled out, load them into an array
         if(from_date_set){
-            var from_datetime = [from_month, from_day, from_year, from_hour, from_minute];
-            console.log(from_datetime);
+            var from_datetime = {"values": [parseInt(from_year), parseInt(from_month), parseInt(from_day), parseInt(from_hour), parseInt(from_minute)]};
+        } else {
+            var from_datetime = false;
         }
 
         // If all `to` fields are filled out, construct the `to_datetime` variable
         if(to_date_set){
-            var to_datetime = [to_month, to_day, to_year, to_hour, to_minute];
-            console.log(to_datetime);
+            var to_datetime = {"values": [parseInt(to_year), parseInt(to_month), parseInt(to_day), parseInt(to_hour), parseInt(to_minute)]};
+        } else {
+            var to_datetime = false;
         }
 
-        // Decide which params to send based on what values are set
-        
-        // Both values are set
-        if(from_date_set && to_date_set) {
-            // Leave first param empty for event
-            console.log('Both are set');
-            display_logs('', from_datetime, to_datetime);
-            return;
-        }
-
-        // `from` value is set, `to` isn't
-        if(from_date_set && !to_date_set) {
-            // Leave first param empty for event
-            console.log('From is set, To isnt');
-            display_logs('', from_datetime);
-            return;
-        }
-
-        // `to` value is set, `from` isn't
-        if(!from_date_set && to_date_set) {
-            // Leave first param empty for event, and second param empty for `from_datetime`
-            console.log('To is set, From isnt');
-            display_logs('', '', to_datetime);
-            return;
-        }
+        // Send the values to the display_logs function
+        display_logs('', from_datetime, to_datetime);
     }
 
     // Reset date filter
     function reset_date_filter() {
+
+        // Change all the select values to their defaults
+        $('.from-date-year').val('Year');
+        $('.from-date-month').val('Month');
+        $('.from-date-day').val('Day');
+        $('.from-date-hour').val('Hour');
+        $('.from-date-minute').val('Minute');
+
+        $('.to-date-year').val('Year');
+        $('.to-date-month').val('Month');
+        $('.to-date-day').val('Day');
+        $('.to-date-hour').val('Hour');
+        $('.to-date-minute').val('Minute');
+
+        // Remove any filters from the logs
+        display_logs();
     }
 
 });

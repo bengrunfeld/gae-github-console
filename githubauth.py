@@ -62,7 +62,7 @@ def _user_is_org_admin(access_token):
 
     # Get a list of teams
     url = (GITHUB_API_URL + '/orgs/' + ORG + '/teams?access_token='
-            + access_token)
+           + access_token)
 
     result = urlfetch.fetch(url)
 

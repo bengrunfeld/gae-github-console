@@ -9,7 +9,6 @@ The Jinja2 environment is also set up here.
 """
 
 import os
-import datetime
 
 import jinja2
 import json
@@ -106,7 +105,7 @@ class BaseHandler(webapp2.RequestHandler):
         if result and result.content:
             response = json.loads(result.content)
         else:
-            response = 'No result returned' 
+            response = 'No result returned'
 
         return response
 
@@ -122,7 +121,7 @@ class BaseHandler(webapp2.RequestHandler):
             for result in results:
                 if 'name' in result and result['name']:
                     teams[result['name']] = (result['id'],
-                                            result['permission'])
+                                             result['permission'])
             return teams
 
         # Declare a dictionary to store the results of the following sorts
@@ -150,6 +149,6 @@ class BaseHandler(webapp2.RequestHandler):
 
         # Create a Log object and then store it to ndb
         log = Log(content=message)
-        log_key = log.put()
+        log.put()
 
         return

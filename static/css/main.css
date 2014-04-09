@@ -40,6 +40,6 @@ a { text-decoration: none !important; }
 
 .from-date, .to-date { margin-bottom:30px; }
 
-.from-date-month, .to-date-month { margin-left:0 !important; }
+.from-date-year, .to-date-year { margin-left:0 !important; }
 
 .add-date-filter { margin-left: 10px;}
