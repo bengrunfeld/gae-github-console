@@ -386,21 +386,36 @@ class DisplayLogs(BaseHandler):
 
     def post(self):
 
+        print(self.request.get('from_date'))
+
         # Construct a from-date and a to-date
-        from_datetime = self.request.get('from_date')
-        to_datetime = self.request.get('to_date')
+        if self.request.get('from_date'):
+            from_datetime = datetime.datetime(self.request.get('from_date'))
+        else:
+            from_datetime = False
+
+        if self.request.get('to_date'):
+            to_datetime = datetime.datetime(self.request.get('to_date'))
+        else:
+            to_datetime = False
 
         # Example of correct formatting of datetime
         # from_value = datetime.datetime(2014, 4, 8, 18, 17, 29)
         # to_value = datetime.datetime(2014, 4, 8, 18, 17, 34)
 
-
-        # If a datetime filter exists, query ndb for that
+        # Check which filters exist, then query ndb based on that
         if from_datetime and to_datetime:
+            # Both filters exist
             qry = Log.query(Log.datetime > from_datetime, 
                             Log.datetime < to_datetime).order(-Log.datetime)
+        elif from_datetime:
+            # A from_datetime filter exists
+            qry = Log.query(Log.datetime > from_datetime).order(-Log.datetime)
+        elif to_datetime:
+            # A to_datetime filter exists
+            qry = Log.query(Log.datetime < to_datetime).order(-Log.datetime)
         else:
-            # No datetime filter exists, perform regular 
+            # No datetime filter exists, perform regular query 
             qry = Log.query().order(-Log.datetime)
 
         # Now go and fetch the results

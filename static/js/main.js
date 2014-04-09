@@ -2,8 +2,10 @@ $(function(){
 
     $('.edit-repo').click(get_data);
     $('.display-logs').click(display_logs);
+    $('.add-date-filter').click(add_date_filter);
+    $('.reset-date-filter').click(reset_date_filter);
 
-    // Bind events
+    // Bind events related to Edit Access
     function bind_events() {
         $('.add-team').click(add_team);
         $('.remove-team').click(remove_team);
@@ -275,13 +277,17 @@ $(function(){
     }
 
     // Display most recent logs
-    function display_logs() {
+    function display_logs(event, from_datetime, to_datetime) {
+
+        // If params are not set, set them as empty. `false` does not translate well into python
+        var from_date = typeof(from_datetime) == 'undefined' ? '' : from_datetime;
+        var to_date = typeof(to_datetime) == 'undefined' ? '' : to_datetime;
 
         // Activate the log script in main.py
         $.ajax({
             type: "POST",
             url: "/display-logs",
-            data: { "number_of_posts": "10" },
+            data: { "number_of_posts": "10", "from_date": from_date, "to_date": to_date },
             success: function(data) {
                 // Populate modal here
                 logs = JSON.parse(data);
@@ -294,4 +300,83 @@ $(function(){
             }
         });
     }
+
+    // Add date filter
+    function add_date_filter() {
+        
+        // Set a bool that will determine if `from` and `to` values are set
+        from_date_set = true;
+        to_date_set = true;
+
+        // Load `from` fields into vars for more intuitive processing
+        from_month = $('.from-date-month option:selected').text();
+        from_day = $('.from-date-day option:selected').text();
+        from_year = $('.from-date-year option:selected').text();
+        from_hour = $('.from-date-hour option:selected').text();
+        from_minute = $('.from-date-minute option:selected').text();
+
+        // Load `to` fields into vars for more intuitive processing
+        to_month = $('.to-date-month option:selected').text();
+        to_day = $('.to-date-day option:selected').text();
+        to_year = $('.to-date-year option:selected').text();
+        to_hour = $('.to-date-hour option:selected').text();
+        to_minute = $('.to-date-minute option:selected').text();
+
+        // All `from` values must be set (check that they are ints). If even one isn't, set bool to false.
+        if(from_month == 'Month') { from_date_set = false; }
+        if(from_day == 'Day') { from_date_set = false; }
+        if(from_year == 'Year') { from_date_set = false; }
+        if(from_hour == 'Hour') { from_date_set = false; }
+        if(from_minute == 'Minute') { from_date_set = false; }
+
+        // All `to` values must be set (check that they are numbers). If even one isn't, set bool to false.
+        if(to_month == 'Month') { to_date_set = false; }
+        if(to_day == 'Day') { to_date_set = false; }
+        if(to_year == 'Year') { to_date_set = false; }
+        if(to_hour == 'Hour') { to_date_set = false; }
+        if(to_minute == 'Minute') { to_date_set = false; }
+
+        // If all `from` fields are filled out, load them into an array
+        if(from_date_set){
+            var from_datetime = [from_month, from_day, from_year, from_hour, from_minute];
+            console.log(from_datetime);
+        }
+
+        // If all `to` fields are filled out, construct the `to_datetime` variable
+        if(to_date_set){
+            var to_datetime = [to_month, to_day, to_year, to_hour, to_minute];
+            console.log(to_datetime);
+        }
+
+        // Decide which params to send based on what values are set
+        
+        // Both values are set
+        if(from_date_set && to_date_set) {
+            // Leave first param empty for event
+            console.log('Both are set');
+            display_logs('', from_datetime, to_datetime);
+            return;
+        }
+
+        // `from` value is set, `to` isn't
+        if(from_date_set && !to_date_set) {
+            // Leave first param empty for event
+            console.log('From is set, To isnt');
+            display_logs('', from_datetime);
+            return;
+        }
+
+        // `to` value is set, `from` isn't
+        if(!from_date_set && to_date_set) {
+            // Leave first param empty for event, and second param empty for `from_datetime`
+            console.log('To is set, From isnt');
+            display_logs('', '', to_datetime);
+            return;
+        }
+    }
+
+    // Reset date filter
+    function reset_date_filter() {
+    }
+
 });
