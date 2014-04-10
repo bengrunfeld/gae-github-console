@@ -43,3 +43,9 @@ a { text-decoration: none !important; }
 .from-date-year, .to-date-year { margin-left:0 !important; }
 
 .add-date-filter { margin-left: 10px;}
+
+.status-message { margin-top: 15px; font-weight:bold; }
+
+.error-message { color:red; }
+
+.success-message { color:green; }

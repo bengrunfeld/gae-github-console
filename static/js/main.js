@@ -4,6 +4,7 @@ $(function(){
     $('.display-logs').click(display_logs);
     $('.add-date-filter').click(add_date_filter);
     $('.reset-date-filter').click(reset_date_filter);
+    $('.email-logs').click(email_logs);
 
     // Bind events related to Edit Access
     function bind_events() {
@@ -374,4 +375,50 @@ $(function(){
         display_logs();
     }
 
+    // Email logs to recipient
+    function email_logs() {
+
+        var logs = [];
+
+        $.each($('.list-logs').children(), function(){
+            logs.push($(this).text());
+        });
+
+        // Prepare the data for transfer via JSON
+        logs = JSON.stringify(logs);
+
+        // Get the email address
+        var addresses = $('#inputEmail').val();
+
+        // Send a mail request to main.py
+        $.ajax({
+            type: "POST",
+            url: "/email-logs",
+            data: { "addresses" : addresses, "logs": logs},
+            success: function(data) {
+                var status = JSON.parse(data);
+                
+                switch(status) {
+                    case 'invalid':
+                        // Place red border around input box
+                        $('.email-logs-form').removeClass('has-success');
+                        $('.email-logs-form').addClass('has-error');
+                        
+                        // Place error message under input box
+                        $('.status-message').remove();
+                        $('.email-logs-form').append('<p class="status-message error-message">Invalid email address</p>');
+                        break;
+                    case 'sent':
+                        // Place green border around input box
+                        $('.email-logs-form').removeClass('has-error');
+                        $('.email-logs-form').addClass('has-success');
+
+                        // Place success message under input box
+                        $('.status-message').remove();
+                        $('.email-logs-form').append('<p class="status-message success-message">Email sent!</p>');
+                        break;
+                }
+            }
+        });
+    }
 });

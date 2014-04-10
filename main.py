@@ -7,6 +7,7 @@ import os
 import sys
 
 from datetime import datetime
+from google.appengine.api import mail
 
 LIB_PATH = os.path.join(os.getcwd(), 'lib')
 if LIB_PATH not in sys.path:
@@ -16,6 +17,7 @@ import json
 import jinja2
 import webapp2
 
+from validate_email import validate_email
 from basehandler import BaseHandler
 from model import Log
 
@@ -406,11 +408,9 @@ class DisplayLogs(BaseHandler):
         if from_date:
             from_datetime = datetime(from_dt[0], from_dt[1], from_dt[2],
                                      from_dt[3], from_dt[4])
-            print(from_datetime)
         if to_date:
             to_datetime = datetime(to_dt[0], to_dt[1], to_dt[2], to_dt[3],
                                    to_dt[4])
-            print(to_datetime)
 
         # Check which filters exist, then query ndb based on that
         if from_datetime and to_datetime:
@@ -461,6 +461,44 @@ class Logout(BaseHandler):
         # Redirect to Github logout
         self.redirect('https://github.com/logout')
 
+
+class EmailLogs(BaseHandler):
+    """
+    Email logs to a specific email address
+    """
+
+    def post(self):
+        user_address = self.request.get('addresses')
+
+        logs = json.loads(self.request.get('logs'))
+
+        content = ''
+
+        # Format logs
+        for log in logs:
+            content += str(log) + '\n'
+
+        # Check SMTP server by adding `check_mx=True`
+        # Verify that email exists by adding `verify=True`
+        if not validate_email(user_address):
+            # Email address is not valid, send error back to user 
+            message = 'invalid'
+            status = json.dumps(message)
+            self.response.out.write(status)
+            return
+        else:
+            # Everything checks out, send mail
+            sender_address = "Github Console <no-reply@webfilings.com>"
+            subject = "Github Console Logs"
+            body = content 
+            mail.send_mail(sender_address, user_address, subject, body)
+
+            # And send success message back to user
+            message = 'sent'
+            status = json.dumps(message)
+            self.response.out.write(status)
+            return
+
 config = {}
 config['webapp2_extras.sessions'] = {
     'secret_key': os.environ.get('SESSION_SECRET'),
@@ -480,4 +518,5 @@ application = webapp2.WSGIApplication([
     ('/add-team-members', AddTeamMembers),
     ('/remove-team-member', RemoveTeamMember),
     ('/display-logs', DisplayLogs),
+    ('/email-logs', EmailLogs),
 ], config=config, debug=True)
