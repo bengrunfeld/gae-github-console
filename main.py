@@ -7,6 +7,7 @@ import os
 import sys
 
 from datetime import datetime
+from datetime import timedelta
 from google.appengine.api import mail
 
 LIB_PATH = os.path.join(os.getcwd(), 'lib')
@@ -499,6 +500,39 @@ class EmailLogs(BaseHandler):
             self.response.out.write(status)
             return
 
+class LogDigest(BaseHandler):
+    """
+    Send a daily digest of logs to a specific email address
+    """
+
+    def get(self):
+        # Set times 12 hours before and 12 hours after now, hence 24 hours
+        from_datetime = datetime.now() - timedelta(hours=12)
+        to_datetime = datetime.now() + timedelta(hours=12) 
+
+        # Query logs for the 24 hour time period
+        qry = Log.query(Log.datetime > from_datetime,
+                        Log.datetime < to_datetime).order(-Log.datetime)
+
+        results = qry.fetch()
+
+        content = '' 
+
+        # Perform a custom sort that concatenates content to datetime
+        for result in results:
+            if result.datetime and result.content:
+                content += str(result.datetime) + ' ' + result.content + '\n'
+
+        # Everything checks out, send mail
+        sender_address = "Github Console <no-reply@webfilings.com>"
+        user_address = os.environ.get('ADMIN_EMAIL') 
+        subject = "Github Console Logs"
+        body = content 
+        mail.send_mail(sender_address, user_address, subject, body)
+
+
+
+
 config = {}
 config['webapp2_extras.sessions'] = {
     'secret_key': os.environ.get('SESSION_SECRET'),
@@ -519,4 +553,5 @@ application = webapp2.WSGIApplication([
     ('/remove-team-member', RemoveTeamMember),
     ('/display-logs', DisplayLogs),
     ('/email-logs', EmailLogs),
+    ('/log-digest', LogDigest),
 ], config=config, debug=True)
