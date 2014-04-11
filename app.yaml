@@ -14,23 +14,10 @@ handlers:
 - url: /static
   static_dir: static
 
-- url: /log-digest
-  script: main.application
-  login: admin
-
-- url: /get-auth-token
-  script: githubauth.application
-
-- url: /get-access-token/.*
-  script: githubauth.application
-
-- url: /log-user-in
-  script: githubauth.application
-
 - url: /.*
-  script: main.application  
+  script: auth.application  
   login: required
-  auth_fail_action: unauthorized
+  # auth_fail_action: unauthorized
   # secure: always
 
 env_variables:
