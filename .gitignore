@@ -3,4 +3,5 @@
 .*cron.yaml.swp
 .DS_Store
 .build
+client_secrets.json
 lib
