@@ -68,7 +68,7 @@ class AuthUser(webapp2.RequestHandler):
         return 
 
 
-class RetrieveCode(webapp2.RequestHandler):
+class RetrieveToken(webapp2.RequestHandler):
     """Switch the temporary code for an access token"""
 
     def get(self):
@@ -102,5 +102,5 @@ config['webapp2_extras.sessions'] = {
 
 application = webapp2.WSGIApplication([
     ('/', AuthUser),
-    ('/code', RetrieveCode),
+    ('/code', RetrieveToken),
 ], config=config, debug=True)
