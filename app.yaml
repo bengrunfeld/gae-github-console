@@ -21,7 +21,7 @@ handlers:
   # secure: always
 
 env_variables:
-  ORG: something # Org name goes here
+  ORG: wf-console-test # Org name goes here
   ADMIN_EMAIL: some@thing.com # Daily digest of logs will be sent here 
 
 

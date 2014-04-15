@@ -1,6 +1,7 @@
 *.pyc
 .*py.swp
 .*cron.yaml.swp
+.*app.yaml.swp
 .DS_Store
 .build
 client_secrets.json
