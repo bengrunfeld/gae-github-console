@@ -1,7 +1,11 @@
-from google.appengine.ext import ndb
+"""
+The model that the Credentials object uses to store and retrieve the access
+token from the datastore.
+"""
+
+from google.appengine.ext import db
+from oauth2client.appengine import CredentialsProperty
 
 
-class Log(ndb.Model):
-    """Models an individual log with a datetime property and log content"""
-    datetime = ndb.DateTimeProperty(auto_now_add=True)
-    content = ndb.StringProperty()
+class CredentialsModel(db.Model):
+    credentials = CredentialsProperty()

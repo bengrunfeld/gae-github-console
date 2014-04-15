@@ -16,12 +16,12 @@ handlers:
 
 - url: /.*
   script: auth.application  
-  login: required
+  # login: required
   # auth_fail_action: unauthorized
   # secure: always
 
 env_variables:
-  ORG: # Org name goes here
-  ADMIN_EMAIL: # Daily digest of logs will be sent here 
+  ORG: something # Org name goes here
+  ADMIN_EMAIL: some@thing.com # Daily digest of logs will be sent here 
 
 
