@@ -1,0 +1,3 @@
+"""
+All actions concerning logs
+"""

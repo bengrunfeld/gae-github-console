@@ -28,7 +28,7 @@ GITHUB_ORGS_MEMBER_URL = 'https://api.github.com/user/orgs'
 GITHUB_API_URL = 'https://api.github.com'
 
 
-def create_flow_object():
+def _create_flow_object():
     """Check if client_secrets.json is populated"""
 
     flow = flow_from_clientsecrets('./client_secrets.json',
@@ -37,7 +37,7 @@ def create_flow_object():
     return flow
 
 
-def get_auth_uri(flow):
+def _get_auth_uri(flow):
     """Provide the API keys and receive a temporary code in return"""
 
     OAuth2WebServerFlow(client_id=flow.client_id,
@@ -50,7 +50,7 @@ def get_auth_uri(flow):
     return auth_uri
 
 
-def get_access_token():
+def _get_access_token():
     """Used to check app activation and append token to urls"""
 
     # Check if access token is in storage
@@ -64,14 +64,14 @@ def get_access_token():
     return credentials.access_token
 
 
-def delete_access_token():
+def _delete_access_token():
     """Delete access token from storage"""
 
     storage = StorageByKeyName(CredentialsModel, 'token', 'credentials')
     storage.delete()
 
 
-def retrieve_code(url):
+def _retrieve_code(url):
     """Retrieve code from url"""
 
     parsed_url = parse_qs(urlparse(url).query)
@@ -79,17 +79,17 @@ def retrieve_code(url):
     return code
 
 
-def get_org_name():
+def _get_org_name():
     """Return the ORG environment variable"""
 
     return os.environ.get('ORG')
 
 
-def user_is_org_member():
+def _user_is_org_member():
     """Check that user has org listed in their org memberships list"""
 
     url = '{}?access_token={}'.format(GITHUB_ORGS_MEMBER_URL,
-                                      get_access_token())
+                                      _get_access_token())
 
     result = urlfetch.fetch(url=url, method=urlfetch.GET)
 
@@ -99,18 +99,18 @@ def user_is_org_member():
     return True
 
 
-def user_is_org_admin():
+def _user_is_org_admin():
     """Check that user belongs to owners team in org"""
 
     url = '{}/orgs/{}/teams?access_token={}'.format(GITHUB_API_URL,
-                                                    get_org_name(),
-                                                    get_access_token())
+                                                    _get_org_name(),
+                                                    _get_access_token())
 
     result = urlfetch.fetch(url)
 
     # Check if user belongs to the Owners team
     if not '"name":"Owners"' in result.content:
-        delete_access_token()
+        _delete_access_token()
         return False
 
     return True
@@ -121,7 +121,7 @@ class DetectActivation(BaseHandler):
 
     def get(self):
 
-        if not get_access_token():
+        if not _get_access_token():
             # App is not set up
             print('No access token')
             self.redirect('/auth')
@@ -142,14 +142,14 @@ class AuthUser(webapp2.RequestHandler):
     def get(self):
 
         # Begin Google's flow workflow
-        flow = create_flow_object()
+        flow = _create_flow_object()
 
         if not flow:
             self.error(404)
             return
 
         # Use the flow object to construct an authorization uri
-        auth_uri = str(get_auth_uri(flow))
+        auth_uri = str(_get_auth_uri(flow))
 
         if not auth_uri:
             self.error(404)
@@ -164,9 +164,9 @@ class RetrieveToken(BaseHandler):
 
     def get(self):
 
-        if get_access_token():
+        if _get_access_token():
             # App is set up, we just want to check if user belongs to org
-            if not user_is_org_member():
+            if not _user_is_org_member():
                 print('User is not org member')
                 self.render('403')
                 self.error(403)
@@ -179,17 +179,18 @@ class RetrieveToken(BaseHandler):
                 return
 
         # Get the code out of the url
-        code = retrieve_code(self.request.url)
+        code = _retrieve_code(self.request.url)
 
         # Create a Credentials object which will hold the access token
-        flow = create_flow_object()
+        flow = _create_flow_object()
         credentials = flow.step2_exchange(code)
 
         # Store the access token, app is now activated
         storage = StorageByKeyName(CredentialsModel, 'token', 'credentials')
         storage.put(credentials)
 
-        if not user_is_org_admin():
+        if not _user_is_org_admin():
+            # User is not an admin, bail
             print('User is not an org admin')
             self.error(403)
             self.render('not_admin')
@@ -203,7 +204,7 @@ class RetrieveToken(BaseHandler):
             "username": "admin",
         }
 
-        # Render token
+        # Tell user that the app is activated 
         self.render('login', context)
 
 
@@ -216,9 +217,21 @@ class DeleteSessionsAndDb(BaseHandler):
         self.session.clear()
 
         # Store the access token, app is now activated
-        delete_access_token()
+        _delete_access_token()
 
         print('All data deleted')
+
+
+class Logout(BaseHandler):
+    """Clear session variables and send to Github logout page"""
+
+    def get(self):
+        
+        # Delete session vars
+        self.session.clear()
+
+        # Redirect to Github logout
+        self.redirect('https://github.com/logout')
 
 
 config = {}
@@ -231,4 +244,5 @@ application = webapp2.WSGIApplication([
     ('/auth', AuthUser),
     ('/code', RetrieveToken),
     ('/del', DeleteSessionsAndDb),
+    ('/logout', Logout),
 ], config=config, debug=True)

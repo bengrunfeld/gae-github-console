@@ -1,0 +1,4 @@
+"""
+All actions concerning teams
+"""
+
