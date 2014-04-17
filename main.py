@@ -42,6 +42,7 @@ class RenderApp(BaseHandler):
         # Check that user is logged in. Send to auth if False
         if not self.session.get('logged_in'):
             self.redirect('/auth')
+            return
 
         # Get data for render
         data = _get_front_page_data()

@@ -45,7 +45,7 @@ $(function(){
                     // Print out all the teams in the org, as long as they are not assigned to a repo
                     if(data.teams) {
                         for(var key in data.teams){
-                            $('.list-teams').append('<li class="list-group-item teams"><span class="team">' + key + '<span class="permission"> (' + data.teams[key][1] + ')</span>' + '</span><button type="button" class="btn btn-success btn-sm team-btn add-team pull-right" id="' + data.teams[key] + '" name="' + key + '">Add Team</button></li>');
+                            $('.list-teams').append('<li class="list-group-item teams"><span class="team">' + key + '<span class="permission"> (' + data.teams[key][1] + ')</span>' + '</span><button type="button" class="btn btn-success btn-sm team-btn add-team pull-right" id="' + data.teams[key][0] + '" name="' + key + '">Add Team</button></li>');
                         }
                     }
 

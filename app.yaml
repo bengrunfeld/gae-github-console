@@ -23,6 +23,18 @@ handlers:
 - url: /get-data
   script: repo.app
 
+- url: /add-team
+  script: teams.app
+
+- url: /remove-team
+  script: teams.app
+
+- url: /edit-team
+  script: teams.app
+
+- url: /change-team
+  script: teams.app
+
 - url: /.*
   script: auth.app  
   # login: required

@@ -50,6 +50,7 @@ class CreateRepo(BaseHandler):
         # Check user is logged in 
         if not self.session.get('logged_in'):
             self.redirect('/auth')
+            return
 
         # Send new repo data to create repo func
         _create_private_repo(self.request.get('repo-name'), 

@@ -32,17 +32,22 @@ GITHUB_API_URL = 'https://api.github.com'
 def fetch_url(url, method=urlfetch.GET, data=''):
     """Send a HTTP request"""
 
-    result = urlfetch.fetch(url=url, method=method, payload=data)
+    result = urlfetch.fetch(url=url, method=method, payload=data, 
+        headers={'Access-Control-Allow-Origin':'*'})
 
+    print('>>>>>>>>>>>>>>>>>>>>>>>>>>')
+    print(url)
     return result.content
+
 
 
 def _create_flow_object():
     """Check if client_secrets.json is populated"""
 
     flow = flow_from_clientsecrets('./client_secrets.json',
-                                   'user,repo',
-                                   'http://localhost:8080/code')
+                                   scope='user,repo',
+                                   redirect_uri='http://localhost:8080/code')
+
     return flow
 
 
@@ -149,6 +154,8 @@ class AuthUser(webapp2.RequestHandler):
     """Auth user via the Github API"""
 
     def get(self):
+
+        print('-------------------> AuthUser')
 
         # Begin Google's flow workflow
         flow = _create_flow_object()
