@@ -15,10 +15,13 @@ handlers:
   static_dir: static
 
 - url: /app
-  script: main.application
+  script: main.app
+
+- url: /create-repo
+  script: repo.app
 
 - url: /.*
-  script: auth.application  
+  script: auth.app  
   # login: required
   # auth_fail_action: unauthorized
   # secure: always

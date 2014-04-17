@@ -17,21 +17,6 @@ $(function(){
         $('.add-team-members').click(add_team_members);
     }
 
-
-    // Not working yet - refactor other code when it works later
-    function query(type, url, data, success_func, repo) {
-    
-        // Send to main.py
-        $.ajax({
-            type: type,
-            url: url,
-            data: data,
-            success: function(data) {
-                success_func(repo);
-            }
-        });
-    }
-
     //Pull all relevant data to populate the modal
     function get_data(repo_name){
         

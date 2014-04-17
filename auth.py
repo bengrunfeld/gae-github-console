@@ -28,6 +28,14 @@ GITHUB_ORGS_MEMBER_URL = 'https://api.github.com/user/orgs'
 GITHUB_API_URL = 'https://api.github.com'
 
 
+def fetch_url(url, method=urlfetch.GET, data=''):
+    """Send a HTTP request"""
+
+    result = urlfetch.fetch(url=url, method=method, payload=data)
+
+    return result.content
+
+
 def _create_flow_object():
     """Check if client_secrets.json is populated"""
 
@@ -50,7 +58,7 @@ def _get_auth_uri(flow):
     return auth_uri
 
 
-def _get_access_token():
+def get_access_token():
     """Used to check app activation and append token to urls"""
 
     # Check if access token is in storage
@@ -89,11 +97,11 @@ def _user_is_org_member():
     """Check that user has org listed in their org memberships list"""
 
     url = '{}?access_token={}'.format(GITHUB_ORGS_MEMBER_URL,
-                                      _get_access_token())
+                                      get_access_token())
 
-    result = urlfetch.fetch(url=url, method=urlfetch.GET)
+    result = fetch_url(url)
 
-    if not '"login":"WebFilings"' in result.content:
+    if not '"login":"WebFilings"' in result:
         return False
 
     return True
@@ -104,12 +112,12 @@ def _user_is_org_admin():
 
     url = '{}/orgs/{}/teams?access_token={}'.format(GITHUB_API_URL,
                                                     _get_org_name(),
-                                                    _get_access_token())
+                                                    get_access_token())
 
-    result = urlfetch.fetch(url)
+    result = fetch_url(url)
 
     # Check if user belongs to the Owners team
-    if not '"name":"Owners"' in result.content:
+    if not '"name":"Owners"' in result:
         _delete_access_token()
         return False
 
@@ -121,7 +129,7 @@ class DetectActivation(BaseHandler):
 
     def get(self):
 
-        if not _get_access_token():
+        if not get_access_token():
             # App is not set up
             print('No access token')
             self.redirect('/auth')
@@ -164,7 +172,7 @@ class RetrieveToken(BaseHandler):
 
     def get(self):
 
-        if _get_access_token():
+        if get_access_token():
             # App is set up, we just want to check if user belongs to org
             if not _user_is_org_member():
                 print('User is not org member')
@@ -239,7 +247,7 @@ config['webapp2_extras.sessions'] = {
     'secret_key': ''  # use secret key
 }
 
-application = webapp2.WSGIApplication([
+app = webapp2.WSGIApplication([
     ('/', DetectActivation),
     ('/auth', AuthUser),
     ('/code', RetrieveToken),
