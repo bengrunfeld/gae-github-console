@@ -11,13 +11,20 @@ from google.appengine.api import urlfetch
 from auth import fetch_url
 from auth import get_access_token
 from basehandler import BaseHandler
+from config import config
+from teams import get_all_teams
+from teams import get_repo_teams
+from teams import remove_dupes
 
+
+GITHUB_API_URL = 'https://api.github.com'
 
 def _create_private_repo(name, description, private=True):
     """Create a private repo"""
 
-    url = 'https://api.github.com/orgs/{}/repos?access_token={}'.format(
-            os.environ.get('ORG'), get_access_token())
+    url = '{}/orgs/{}/repos?access_token={}'.format(GITHUB_API_URL,
+                                                    os.environ.get('ORG'), 
+                                                    get_access_token())
     
     fields = {
         "name": name,
@@ -52,11 +59,31 @@ class CreateRepo(BaseHandler):
         self.redirect('/app')
 
 
-config = {}
-config['webapp2_extras.sessions'] = {
-    'secret_key': ''  # use secret key
-}
+class GetRepoData(BaseHandler):
+    """List teams with access to the repo"""
+
+    def post(self):
+        
+        # If data didn't come through, bail
+        if not self.request.get('repo'):
+            return
+
+        # Get all teams in org
+        all_teams = get_all_teams()
+        
+        # Get all teams with access to repo
+        repo_teams = get_repo_teams(self.request.get('repo'))
+
+        # Remove all dupes from list 
+        data = remove_dupes(all_teams, repo_teams)
+
+        # Send data back to app 
+        self.response.out.write(data)
+
+
+config = config()
 
 app = webapp2.WSGIApplication([
     ('/create-repo', CreateRepo),
+    ('/get-data', GetRepoData),
 ], config=config, debug=True)

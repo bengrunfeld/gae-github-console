@@ -8,9 +8,10 @@ import json
 
 from google.appengine.api import urlfetch
 
-from basehandler import BaseHandler
 from auth import get_access_token
 from auth import fetch_url
+from basehandler import BaseHandler
+from config import config
 
 def _get_front_page_data():
     """Retrieve list of private repos for the org"""
@@ -20,8 +21,7 @@ def _get_front_page_data():
             os.environ.get('ORG'), get_access_token()) 
 
     # Fetch the list of private repos
-    result = fetch_url(url)
-    content = json.loads(result)
+    content = json.loads(fetch_url(url))
 
     response = [] 
 
@@ -53,10 +53,7 @@ class RenderApp(BaseHandler):
         self.render('index', context)
 
 
-config = {}
-config['webapp2_extras.sessions'] = {
-    'secret_key': ''  # use secret key
-}
+config = config() 
 
 app = webapp2.WSGIApplication([
     ('/app', RenderApp),

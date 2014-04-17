@@ -20,6 +20,9 @@ handlers:
 - url: /create-repo
   script: repo.app
 
+- url: /get-data
+  script: repo.app
+
 - url: /.*
   script: auth.app  
   # login: required

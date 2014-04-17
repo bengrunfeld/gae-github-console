@@ -20,8 +20,9 @@ from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import OAuth2WebServerFlow
 from oauth2client.appengine import StorageByKeyName
 
-from model import CredentialsModel
 from basehandler import BaseHandler
+from config import config
+from model import CredentialsModel
 
 
 GITHUB_ORGS_MEMBER_URL = 'https://api.github.com/user/orgs'
@@ -242,10 +243,7 @@ class Logout(BaseHandler):
         self.redirect('https://github.com/logout')
 
 
-config = {}
-config['webapp2_extras.sessions'] = {
-    'secret_key': ''  # use secret key
-}
+config = config() 
 
 app = webapp2.WSGIApplication([
     ('/', DetectActivation),
