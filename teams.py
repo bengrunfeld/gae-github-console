@@ -63,7 +63,7 @@ def remove_dupes(all_teams, repo_teams):
     del all_teams['Owners']
 
     # Make a copy of all_teams, since teams will be modified
-    teams = all_teams
+    teams = dict(all_teams)
 
     # Remove dupes from all_teams
     for repo_team in repo_teams:
