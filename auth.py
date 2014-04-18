@@ -32,7 +32,7 @@ GITHUB_API_URL = 'https://api.github.com'
 def fetch_url(url, method=urlfetch.GET, data=''):
     """Send a HTTP request"""
 
-    result = urlfetch.fetch(url=url, method=method, payload=data, 
+    result = urlfetch.fetch(url=url, method=method, payload=data,
         headers={'Access-Control-Allow-Origin':'*'})
 
     print('>>>>>>>>>>>>>>>>>>>>>>>>>>')
@@ -220,7 +220,7 @@ class RetrieveToken(BaseHandler):
             "username": "admin",
         }
 
-        # Tell user that the app is activated 
+        # Tell user that the app is activated
         self.render('login', context)
 
 
@@ -242,7 +242,7 @@ class Logout(BaseHandler):
     """Clear session variables and send to Github logout page"""
 
     def get(self):
-        
+
         # Delete session vars
         self.session.clear()
 
@@ -250,7 +250,7 @@ class Logout(BaseHandler):
         self.redirect('https://github.com/logout')
 
 
-config = config() 
+config = config()
 
 app = webapp2.WSGIApplication([
     ('/', DetectActivation),

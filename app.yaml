@@ -17,22 +17,10 @@ handlers:
 - url: /app
   script: main.app
 
-- url: /create-repo
+- url: /.*repo
   script: repo.app
 
-- url: /get-data
-  script: repo.app
-
-- url: /add-team
-  script: teams.app
-
-- url: /remove-team
-  script: teams.app
-
-- url: /edit-team
-  script: teams.app
-
-- url: /change-team
+- url: /.*team
   script: teams.app
 
 - url: /.*

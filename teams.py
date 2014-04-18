@@ -60,30 +60,17 @@ def get_repo_teams(repo):
     return response
 
 
-def remove_dupes(all_teams, repo_teams):
+def remove_dupes(all_vals, select_vals):
     """Remove duplicates from either list"""
-
-    # Remove Owners from teasm
-    del all_teams['Owners']
-
-    # Make a copy of all_teams, since teams will be modified
-    teams = dict(all_teams)
-
-    # Remove dupes from all_teams
-    for repo_team in repo_teams:
-        if repo_team in teams:
-            del teams[repo_team]
     
-    # Send back all_teams as well, for add/remove team member functionality
-    data = dict([
-                ('teams', teams),
-                ('all_teams', all_teams),
-                ('team_collaborators', repo_teams)
-                ])
-                
+    # Remove dupes from all_teams
+    for select_val in select_vals:
+        if select_val in all_vals:
+            del all_vals[select_val]
 
-    return json.dumps(data)
-
+    return all_vals
+    
+                    
 def add_team(team_id, repo):
     """Add team access to a repo"""
 
@@ -142,17 +129,61 @@ def get_team_members(team_id):
 
     team_members = json.loads(fetch_url(url))
 
-    return team_members
+    response = [] 
+
+    for team_member in team_members:
+            response.append(team_member.get('login'))
+
+    return response 
 
 
 def get_all_org_members():
+
     """Get all members belonging to org"""
 
     url = '{}/orgs/{}/members?access_token={}'.format(GITHUB_API_URL,
                                                       os.environ.get('ORG'),
                                                       get_access_token())
 
-    result = json.loads(fetch_url(url))
+    all_members = json.loads(fetch_url(url))
+
+    response = [] 
+
+    for member in all_members:
+            response.append(member.get('login'))
+
+    return response 
+
+
+    return result
+    
+
+def _add_members_to_team(team_id, members):
+    """Add members of org to a team"""
+
+    for member in members:
+        url = '{}/teams/{}/members/{}?access_token={}'.format(
+                                                GITHUB_API_URL,
+                                                team_id,
+                                                member,
+                                                get_access_token())
+
+        fetch_url(url, urlfetch.PUT)
+
+    return
+
+def _remove_member_from_team(team_id, member):
+    """Remove an org member from a team"""
+
+    url = '{}/teams/{}/members/{}?access_token={}'.format(
+                                                GITHUB_API_URL,
+                                                team_id,
+                                                member,
+                                                get_access_token()) 
+
+    fetch_url(url, urlfetch.DELETE)
+
+    return
 
 
 class AddTeam(BaseHandler):
@@ -178,9 +209,9 @@ class RemoveTeam(BaseHandler):
         if not self.session.get('logged_in'):
             self.redirect('/auth')
             return
-
         # Remove team
-        remove_team(self.request.get('team_id'), self.request.get('repo')) 
+        remove_team(self.request.get('team_id'), 
+            self.request.get('repo'))
 
 
 class EditTeam(BaseHandler):
@@ -216,19 +247,53 @@ class ChangeTeam(BaseHandler):
         # Get members for a given team
         team_members = get_team_members(self.request.get('team_id'))
 
-        
         # Get all members belonging to org
-        # all_members = get_all_org_members()
+        all_members = get_all_org_members()
 
         # Remove dupes
-        # members = remove_dupes(all_members, team_members)
+        all_members = list(set(all_members) - set(team_members))
 
-        # response = {'team_members': team_members, 'all_members': all_members}
-        # members = json.dumps(response)
-        
+        response = {
+            'team_members': team_members, 
+            'all_members': all_members
+        }
+
+        members = json.dumps(response)
+
         # Send members lists back to app
-        self.response.out.write(team_members)
+        self.response.out.write(members)
         
+
+class AddTeamMembers(BaseHandler):
+    """Add a member of the org to the team"""
+
+    def post(self):
+
+        if not self.session.get('logged_in'):
+            self.redirect('/auth')
+            return
+
+        # Add members to team
+        _add_members_to_team(self.request.get('team_id'),
+            json.loads(self.request.get('users')))
+
+        return
+
+
+class RemoveTeamMember(BaseHandler):
+    """Remove a member fo the org from a team"""
+
+    def post(self):
+        
+        if not self.session.get('logged_in'):
+            self.redirect('/auth')
+            return
+
+        # Remove member from team
+        _remove_member_from_team(self.request.get('team_id'),
+                                 self.request.get('user')) 
+
+
 
 config = config()
 
@@ -237,5 +302,6 @@ app = webapp2.WSGIApplication([
     ('/remove-team', RemoveTeam),
     ('/edit-team', EditTeam),
     ('/change-team', ChangeTeam),
+    ('/add-members-team', AddTeamMembers),
+    ('/remove-member-team', RemoveTeamMember),
 ], config=config, debug=True)
-

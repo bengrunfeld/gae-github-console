@@ -30,7 +30,7 @@ $(function(){
         // Get user and team data for the repo
         $.ajax({
             type: "POST",
-            url: "/get-data",
+            url: "/get-data-repo",
             data: { "repo" : repo },
             success: function(data) {
                 if(data) {
@@ -231,7 +231,7 @@ $(function(){
         // Send to main.py
         $.ajax({
             type: "POST",
-            url: "/add-team-members",
+            url: "/add-members-team",
             data: { "team_id" : team_id, "users": users},
             success: function(data) {
                 change_team();
@@ -254,7 +254,7 @@ $(function(){
         // Send to main.py
         $.ajax({
             type: "POST",
-            url: "/remove-team-member",
+            url: "/remove-member-team",
             data: { "team_id" : team_id, "user": user},
             success: function(data) {
                 change_team();

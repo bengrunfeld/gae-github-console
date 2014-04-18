@@ -71,20 +71,32 @@ class GetRepoData(BaseHandler):
 
         # Get all teams in org
         all_teams = get_all_teams()
-        
+        del all_teams['Owners']
+
         # Get all teams with access to repo
         repo_teams = get_repo_teams(self.request.get('repo'))
 
+
+        # Make a copy of all_teams, since teams will be modified
+        teams = dict(all_teams)
+
         # Remove all dupes from list 
-        data = remove_dupes(all_teams, repo_teams)
+        teams = remove_dupes(teams, repo_teams)
+
+        # Send back all_teams as well, for add/remove team member functionality
+        data = dict([
+                ('teams', teams),
+                ('all_teams', all_teams),
+                ('team_collaborators', repo_teams)
+                ])
 
         # Send data back to app 
-        self.response.out.write(data)
+        self.response.out.write(json.dumps(data))
 
 
 config = config()
 
 app = webapp2.WSGIApplication([
     ('/create-repo', CreateRepo),
-    ('/get-data', GetRepoData),
+    ('/get-data-repo', GetRepoData),
 ], config=config, debug=True)
