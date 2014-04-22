@@ -23,6 +23,9 @@ handlers:
 - url: /.*team
   script: teams.app
 
+- url: /.*logs
+  script: logs.app
+
 - url: /.*
   script: auth.app  
   # login: required

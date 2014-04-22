@@ -35,8 +35,6 @@ def fetch_url(url, method=urlfetch.GET, data=''):
     result = urlfetch.fetch(url=url, method=method, payload=data,
         headers={'Access-Control-Allow-Origin':'*'})
 
-    print('>>>>>>>>>>>>>>>>>>>>>>>>>>')
-    print(url)
     return result.content
 
 
@@ -137,7 +135,6 @@ class DetectActivation(BaseHandler):
 
         if not get_access_token():
             # App is not set up
-            print('No access token')
             self.redirect('/auth')
             return
 
@@ -154,8 +151,6 @@ class AuthUser(webapp2.RequestHandler):
     """Auth user via the Github API"""
 
     def get(self):
-
-        print('-------------------> AuthUser')
 
         # Begin Google's flow workflow
         flow = _create_flow_object()
@@ -183,13 +178,11 @@ class RetrieveToken(BaseHandler):
         if get_access_token():
             # App is set up, we just want to check if user belongs to org
             if not _user_is_org_member():
-                print('User is not org member')
                 self.render('403')
                 self.error(403)
                 return
             else:
                 # User is now logged in, send to app
-                print('User is an org member, send them to app')
                 self.session['logged_in'] = True
                 self.redirect('/app')
                 return
@@ -207,7 +200,6 @@ class RetrieveToken(BaseHandler):
 
         if not _user_is_org_admin():
             # User is not an admin, bail
-            print('User is not an org admin')
             self.error(403)
             self.render('not_admin')
             return
@@ -235,7 +227,6 @@ class DeleteSessionsAndDb(BaseHandler):
         # Store the access token, app is now activated
         _delete_access_token()
 
-        print('All data deleted')
 
 
 class Logout(BaseHandler):

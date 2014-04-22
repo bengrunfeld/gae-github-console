@@ -12,6 +12,7 @@ from auth import fetch_url
 from auth import get_access_token
 from basehandler import BaseHandler
 from config import config
+from logs import create_log
 
 
 GITHUB_API_URL = 'https://api.github.com'
@@ -84,6 +85,10 @@ def add_team(team_id, repo):
                                                 
     # Give repo access to team
     fetch_url(url, urlfetch.PUT)
+
+    # Create a log entry
+    message = 'The {} team was added to the {} repo'.format(team_id, repo)
+    create_log(message)
 
 
 def remove_team(team_id, repo):
