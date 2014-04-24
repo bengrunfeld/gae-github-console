@@ -5,14 +5,20 @@ Logs are stored in ndb and can be sorted by date and time, and send to specific
 email addresses.
 """
 
-import os
-import webapp2
 import json
+import os
+import sys
+import webapp2
+
+sys.path.append('lib')
 
 from datetime import datetime
+from datetime import timedelta
+from google.appengine.api import mail
 from google.appengine.api import urlfetch
 from google.appengine.ext import db
-
+from validate_email import validate_email
+ 
 from basehandler import BaseHandler
 from config import config
 from model import Log
@@ -48,15 +54,68 @@ def create_log(content):
     """Create a log for every user action made"""
 
     log = Log(content=content)
-    log.put 
+    log.put() 
 
 
 def show_all_logs():
     """Display a limited number of unfiltered logs to the user"""
 
     qry = Log.all()
-    # result = qry.run(limit=30)
-    # print(result)
+    qry.order('-input_datetime')
+
+    result = [] 
+
+    for q in qry.run(limit=10):
+        result.append(str(q.input_datetime) + ' ' + q.content)
+
+    return result
+
+
+def show_filtered_logs(from_date, to_date):
+    """Retrieve logs from the datastore filtered by datetime"""
+
+    qry = Log.all()
+    
+    # Filter based on if the values exist
+    if from_date:
+        qry.filter('input_datetime >', from_date)
+
+    if to_date:
+        qry.filter('input_datetime <', to_date)
+
+    qry.order('-input_datetime')
+
+    result = []
+
+    for q in qry.run():
+        result.append(str(q.input_datetime) + ' ' + q.content)
+
+    return result
+
+
+def format_logs(logs):
+    """Place newline characters at the end of each line"""
+
+    content = ''
+
+    for log in logs:
+        content += str(log) + '\n' 
+
+    return content
+
+
+def send_email(user_address, logs):
+    """Send a filtered list of logs to a specified email address"""
+
+    sender_address = 'Github Console <no-reply@webfilings.com>'
+    subject = 'Github Console Logs'
+    
+
+    # Indicate to the app if the mail was sent successfully or not 
+    if mail.send_mail(sender_address, user_address, subject, logs):
+        return True
+
+    return False 
 
 
 class DisplayLogs(webapp2.RequestHandler):
@@ -68,30 +127,60 @@ class DisplayLogs(webapp2.RequestHandler):
         from_date = json.loads(self.request.get('from_date'))
         to_date = json.loads(self.request.get('to_date'))
 
-        # If both dates are false, bail.
+        # If both dates are false, show all logs and bail.
         if not check_dates(from_date, to_date):
-            show_all_logs()
+            response = json.dumps(show_all_logs())
+            self.response.out.write(response)
             return 
 
         # Construct a datetime object, if the value isn't false 
         from_date = _construct_datetime(from_date)
         to_date = _construct_datetime(to_date)
 
-        print(from_date, to_date)
-        
+        # Filter logs by datetime and send results to the page
+        response = json.dumps(show_filtered_logs(from_date, to_date)) 
+        self.response.out.write(response)
+
 
 class EmailLogs(webapp2.RequestHandler):
     """Email a time-specific list of logs to a certain email address"""
 
     def post(self):
-        pass
+
+        user_addresses = self.request.get('addresses')
+        logs = json.loads(self.request.get('logs'))
+
+        # Validate the email address
+        # Check SMTP server by adding `check_mx=True`
+        # Verify that email exists by adding `verify=True`
+        if not validate_email(user_addresses):
+            status = json.dumps('invalid')
+            self.response.out.write(status)
+            return
+
+        # Format logs so that they contain newline characters
+        formatted_logs = format_logs(logs)
+
+        # If email logs is successful, send success message to user
+        send_email(user_addresses, formatted_logs)
+
+        status = json.dumps('success')
+        self.response.out.write(status)
 
 
 class LogDigest(webapp2.RequestHandler):
     """Send a daily digest of logs to a set email address"""
 
-    def post(self):
-        pass
+    def get(self):
+
+        # Retrieve logs that are +/- 12 hrs from now for a 24 hr time period
+        logs = show_filtered_logs((datetime.now - timedelta(hours=12)),
+                                  (datetime.now + timedelta(hours=12)))
+
+        # Format logs so that they contain newline characters
+        formatted_logs = format_logs(logs)        
+
+        send_mail(os.environ.get('ADMIN_EMAIL', formatted_logs))
 
 
 config = config()

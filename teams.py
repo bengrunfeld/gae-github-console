@@ -70,6 +70,20 @@ def remove_dupes(all_vals, select_vals):
             del all_vals[select_val]
 
     return all_vals
+
+
+def _get_team_name(team_id):
+    """Get the name of a certain team"""
+
+    # Create URL to get team name
+    url = '{}/teams/{}?access_token={}'.format(GITHUB_API_URL,
+                                               team_id,
+                                               get_access_token())
+
+    # Retrieve team name from result
+    result = json.loads(fetch_url(url))
+
+    return result['name'] 
     
                     
 def add_team(team_id, repo):
@@ -87,7 +101,8 @@ def add_team(team_id, repo):
     fetch_url(url, urlfetch.PUT)
 
     # Create a log entry
-    message = 'The {} team was added to the {} repo'.format(team_id, repo)
+    message = '{} was added to the {} repo'.format(_get_team_name(team_id), 
+                                                   repo)
     create_log(message)
 
 
@@ -105,6 +120,11 @@ def remove_team(team_id, repo):
     # Remove repo access from a team
     fetch_url(url, urlfetch.DELETE)
 
+    # Create a log entry
+    message = '{} was removed from the {} repo'.format(_get_team_name(team_id), 
+                                                       repo)
+    create_log(message)
+
 
 def edit_team(team_name, team_id, edit_type):
     """Edit the access of a team"""
@@ -121,7 +141,12 @@ def edit_team(team_name, team_id, edit_type):
     }
 
     fetch_url(url, urlfetch.PATCH, json.dumps(fields))
-          
+
+    # Create a log entry
+    message = '{} was given {} access'.format(team_name, edit_type)
+
+    create_log(message)
+
 
 def get_team_members(team_id):
     """Get the members of a given team"""
@@ -175,7 +200,11 @@ def _add_members_to_team(team_id, members):
 
         fetch_url(url, urlfetch.PUT)
 
-    return
+    # Create a log entry
+    message = '{} was added to {}'.format(members, _get_team_name(team_id))
+
+    create_log(message)
+
 
 def _remove_member_from_team(team_id, member):
     """Remove an org member from a team"""
@@ -188,7 +217,10 @@ def _remove_member_from_team(team_id, member):
 
     fetch_url(url, urlfetch.DELETE)
 
-    return
+    # Create a log entry
+    message = '{} was removed from {}'.format(member, _get_team_name(team_id))
+
+    create_log(message)
 
 
 class AddTeam(BaseHandler):
@@ -290,10 +322,6 @@ class RemoveTeamMember(BaseHandler):
 
     def post(self):
         
-        if not self.session.get('logged_in'):
-            self.redirect('/auth')
-            return
-
         # Remove member from team
         _remove_member_from_team(self.request.get('team_id'),
                                  self.request.get('user')) 

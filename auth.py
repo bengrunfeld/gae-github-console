@@ -13,6 +13,7 @@ from urlparse import urlparse
 from urlparse import parse_qs
 
 from google.appengine.api import urlfetch
+from google.appengine.api import users
 
 sys.path.append("lib")
 
@@ -36,7 +37,6 @@ def fetch_url(url, method=urlfetch.GET, data=''):
         headers={'Access-Control-Allow-Origin':'*'})
 
     return result.content
-
 
 
 def _create_flow_object():
@@ -151,6 +151,13 @@ class AuthUser(webapp2.RequestHandler):
     """Auth user via the Github API"""
 
     def get(self):
+
+        # ERROR: Currently not working in GAE Dev server
+        # If User doesn't have Webfilings account, bail
+        # if not users.get_current_user():
+        #     self.redirect('/403')
+        #     self.error(403) 
+        #     return
 
         # Begin Google's flow workflow
         flow = _create_flow_object()

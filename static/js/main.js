@@ -1,10 +1,25 @@
 $(function(){
 
+    // Add event handlers on startup
     $('.edit-repo').click(get_data);
     $('.display-logs').click(display_logs);
     $('.add-date-filter').click(add_date_filter);
     $('.reset-date-filter').click(reset_date_filter);
     $('.email-logs').click(email_logs);
+
+    // When modal is closed, remove events so that they don't get bound again the next time the modal is opened
+    $('.modal').on('hide.bs.modal', unbind_events);
+
+    function unbind_events() {
+        $('.add-team').off();
+        $('.remove-team').off();
+        $('.make-admin').off();
+        $('.make-push').off();
+        $('.make-pull').off();
+        $('.list-all-teams').off();
+        $('.add-team-members').off();
+    }
+
 
     // Bind events related to Edit Access
     function bind_events() {
@@ -260,6 +275,8 @@ $(function(){
                 change_team();
             }
         });
+
+
     }
 
     // Display most recent logs
@@ -393,14 +410,14 @@ $(function(){
                         $('.status-message').remove();
                         $('.email-logs-form').append('<p class="status-message error-message">Invalid email address</p>');
                         break;
-                    case 'sent':
+                    case 'success':
                         // Place green border around input box
                         $('.email-logs-form').removeClass('has-error');
                         $('.email-logs-form').addClass('has-success');
 
                         // Place success message under input box
                         $('.status-message').remove();
-                        $('.email-logs-form').append('<p class="status-message success-message">Email sent!</p>');
+                        $('.email-logs-form').append('<p class="status-message success-message">Email successfully sent!</p>');
                         break;
                 }
             }

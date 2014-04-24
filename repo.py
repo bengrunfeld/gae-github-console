@@ -12,12 +12,24 @@ from auth import fetch_url
 from auth import get_access_token
 from basehandler import BaseHandler
 from config import config
+from logs import create_log
 from teams import get_all_teams
 from teams import get_repo_teams
 from teams import remove_dupes
 
 
 GITHUB_API_URL = 'https://api.github.com'
+
+
+def _get_user_name():
+    """Get the name of the current user"""
+
+    url = '{}/user?access_token={}'.format(GITHUB_API_URL, get_access_token()) 
+
+    result = json.loads(fetch_url(url))
+
+    return result['login']
+
 
 def _create_private_repo(name, description, private=True):
     """Create a private repo"""
@@ -34,12 +46,10 @@ def _create_private_repo(name, description, private=True):
 
     # Send request to Github's API
     result = fetch_url(url, urlfetch.POST, json.dumps(fields))
-    return
 
-
-def _create_log_entry():
-    """Create a log entry for the creation of the private repo"""
-    pass
+    # Create a log entry
+    message = '{} created the {} repo'.format(_get_user_name(), name)
+    create_log(message)
 
 
 class CreateRepo(BaseHandler):
