@@ -15,11 +15,8 @@ sys.path.append('lib')
 from datetime import datetime
 from datetime import timedelta
 from google.appengine.api import mail
-from google.appengine.api import urlfetch
-from google.appengine.ext import db
 from validate_email import validate_email
- 
-from basehandler import BaseHandler
+
 from config import config
 from model import Log
 
@@ -32,7 +29,7 @@ def check_dates(from_date, to_date):
 
     if not from_date and not to_date:
         return False
-    
+
     return True
 
 
@@ -40,21 +37,21 @@ def _construct_datetime(daterange):
     """Construct a datetime that will be used to create logs"""
 
     # If a datetime isn't set, bail
-    if not daterange: 
+    if not daterange:
         return
 
     # Can only grab values after var has been checked to be True
     dt = daterange['values']
-    
+
     # Return a datetime object
-    return datetime(dt[0], dt[1], dt[2], dt[3], dt[4]) 
+    return datetime(dt[0], dt[1], dt[2], dt[3], dt[4])
 
 
 def create_log(content):
     """Create a log for every user action made"""
 
     log = Log(content=content)
-    log.put() 
+    log.put()
 
 
 def show_all_logs():
@@ -63,7 +60,7 @@ def show_all_logs():
     qry = Log.all()
     qry.order('-input_datetime')
 
-    result = [] 
+    result = []
 
     for q in qry.run(limit=10):
         result.append(str(q.input_datetime) + ' ' + q.content)
@@ -75,7 +72,7 @@ def show_filtered_logs(from_date, to_date):
     """Retrieve logs from the datastore filtered by datetime"""
 
     qry = Log.all()
-    
+
     # Filter based on if the values exist
     if from_date:
         qry.filter('input_datetime >', from_date)
@@ -99,7 +96,7 @@ def format_logs(logs):
     content = ''
 
     for log in logs:
-        content += str(log) + '\n' 
+        content += str(log) + '\n'
 
     return content
 
@@ -109,13 +106,12 @@ def send_email(user_address, logs):
 
     sender_address = 'Github Console <no-reply@webfilings.com>'
     subject = 'Github Console Logs'
-    
 
-    # Indicate to the app if the mail was sent successfully or not 
+    # Indicate to the app if the mail was sent successfully or not
     if mail.send_mail(sender_address, user_address, subject, logs):
         return True
 
-    return False 
+    return False
 
 
 class DisplayLogs(webapp2.RequestHandler):
@@ -131,14 +127,14 @@ class DisplayLogs(webapp2.RequestHandler):
         if not check_dates(from_date, to_date):
             response = json.dumps(show_all_logs())
             self.response.out.write(response)
-            return 
+            return
 
-        # Construct a datetime object, if the value isn't false 
+        # Construct a datetime object, if the value isn't false
         from_date = _construct_datetime(from_date)
         to_date = _construct_datetime(to_date)
 
         # Filter logs by datetime and send results to the page
-        response = json.dumps(show_filtered_logs(from_date, to_date)) 
+        response = json.dumps(show_filtered_logs(from_date, to_date))
         self.response.out.write(response)
 
 
@@ -178,9 +174,9 @@ class LogDigest(webapp2.RequestHandler):
                                   (datetime.now + timedelta(hours=12)))
 
         # Format logs so that they contain newline characters
-        formatted_logs = format_logs(logs)        
+        formatted_logs = format_logs(logs)
 
-        send_mail(os.environ.get('ADMIN_EMAIL', formatted_logs))
+        send_email(os.environ.get('ADMIN_EMAIL', formatted_logs))
 
 
 config = config()

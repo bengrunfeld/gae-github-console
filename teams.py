@@ -20,19 +20,19 @@ GITHUB_API_URL = 'https://api.github.com'
 
 def get_all_teams():
     """Get all teams belonging to org"""
-    
-    # Create url 
+
+    # Create url
     url = '{}/orgs/{}/teams?access_token={}'.format(GITHUB_API_URL,
                                                     os.environ.get('ORG'),
-                                                    get_access_token())    
+                                                    get_access_token())
     # Fetch results from Github
     content = json.loads(fetch_url(url))
 
     # Create a dict to store results
-    response = {} 
+    response = {}
 
     for value in content:
-        response[value.get('name')] = (value.get('id'), 
+        response[value.get('name')] = (value.get('id'),
                                        value.get('permission'))
 
     return response
@@ -43,27 +43,26 @@ def get_repo_teams(repo):
 
     # Create url
     url = '{}/repos/{}/{}/teams?access_token={}'.format(GITHUB_API_URL,
-                                                       os.environ.get('ORG'),
-                                                       repo,
-                                                       get_access_token())
+                                                        os.environ.get('ORG'),
+                                                        repo,
+                                                        get_access_token())
 
     # Fetch results from Github
     content = json.loads(fetch_url(url))
-    
+
     # Create a dict to store results
-    response = {} 
+    response = {}
 
     for value in content:
-        response[value.get('name')] = (value.get('id'), 
+        response[value.get('name')] = (value.get('id'),
                                        value.get('permission'))
 
-    
     return response
 
 
 def remove_dupes(all_vals, select_vals):
     """Remove duplicates from either list"""
-    
+
     # Remove dupes from all_teams
     for select_val in select_vals:
         if select_val in all_vals:
@@ -83,25 +82,25 @@ def _get_team_name(team_id):
     # Retrieve team name from result
     result = json.loads(fetch_url(url))
 
-    return result['name'] 
-    
-                    
+    return result['name']
+
+
 def add_team(team_id, repo):
     """Add team access to a repo"""
 
     # Build url for HTTP request
     url = '{}/teams/{}/repos/{}/{}?access_token={}'.format(
-                                                GITHUB_API_URL,
-                                                team_id,
-                                                os.environ.get('ORG'),
-                                                repo,
-                                                get_access_token())
-                                                
+          GITHUB_API_URL,
+          team_id,
+          os.environ.get('ORG'),
+          repo,
+          get_access_token())
+
     # Give repo access to team
     fetch_url(url, urlfetch.PUT)
 
     # Create a log entry
-    message = '{} was added to the {} repo'.format(_get_team_name(team_id), 
+    message = '{} was added to the {} repo'.format(_get_team_name(team_id),
                                                    repo)
     create_log(message)
 
@@ -111,17 +110,17 @@ def remove_team(team_id, repo):
 
     # Build url for HTTP request
     url = '{}/teams/{}/repos/{}/{}?access_token={}'.format(
-                                            GITHUB_API_URL,
-                                            team_id,
-                                            os.environ.get('ORG'),
-                                            repo,
-                                            get_access_token())
+          GITHUB_API_URL,
+          team_id,
+          os.environ.get('ORG'),
+          repo,
+          get_access_token())
 
     # Remove repo access from a team
     fetch_url(url, urlfetch.DELETE)
 
     # Create a log entry
-    message = '{} was removed from the {} repo'.format(_get_team_name(team_id), 
+    message = '{} was removed from the {} repo'.format(_get_team_name(team_id),
                                                        repo)
     create_log(message)
 
@@ -151,20 +150,20 @@ def edit_team(team_name, team_id, edit_type):
 def get_team_members(team_id):
     """Get the members of a given team"""
 
-    # Get members belonging to the selected team 
+    # Get members belonging to the selected team
     url = '{}/teams/{}/members?access_token={}'.format(
-                                            GITHUB_API_URL,
-                                            team_id,
-                                            get_access_token())
+          GITHUB_API_URL,
+          team_id,
+          get_access_token())
 
     team_members = json.loads(fetch_url(url))
 
-    response = [] 
+    response = []
 
     for team_member in team_members:
             response.append(team_member.get('login'))
 
-    return response 
+    return response
 
 
 def get_all_org_members():
@@ -177,26 +176,23 @@ def get_all_org_members():
 
     all_members = json.loads(fetch_url(url))
 
-    response = [] 
+    response = []
 
     for member in all_members:
             response.append(member.get('login'))
 
-    return response 
+    return response
 
-
-    return result
-    
 
 def _add_members_to_team(team_id, members):
     """Add members of org to a team"""
 
     for member in members:
         url = '{}/teams/{}/members/{}?access_token={}'.format(
-                                                GITHUB_API_URL,
-                                                team_id,
-                                                member,
-                                                get_access_token())
+              GITHUB_API_URL,
+              team_id,
+              member,
+              get_access_token())
 
         fetch_url(url, urlfetch.PUT)
 
@@ -210,10 +206,10 @@ def _remove_member_from_team(team_id, member):
     """Remove an org member from a team"""
 
     url = '{}/teams/{}/members/{}?access_token={}'.format(
-                                                GITHUB_API_URL,
-                                                team_id,
-                                                member,
-                                                get_access_token()) 
+          GITHUB_API_URL,
+          team_id,
+          member,
+          get_access_token())
 
     fetch_url(url, urlfetch.DELETE)
 
@@ -227,7 +223,7 @@ class AddTeam(BaseHandler):
     """Give repo access to a team"""
 
     def post(self):
-        
+
         # If user isn't logged in, send to auth
         if not self.session.get('logged_in'):
             self.redirect('/auth')
@@ -235,37 +231,37 @@ class AddTeam(BaseHandler):
 
         # Add team
         add_team(self.request.get('team_id'), self.request.get('repo'))
- 
+
 
 class RemoveTeam(BaseHandler):
     """Remove repo access from a team"""
 
     def post(self):
-        
+
         # If user isn't logged in, send to auth
         if not self.session.get('logged_in'):
             self.redirect('/auth')
             return
         # Remove team
-        remove_team(self.request.get('team_id'), 
-            self.request.get('repo'))
+        remove_team(self.request.get('team_id'),
+                    self.request.get('repo'))
 
 
 class EditTeam(BaseHandler):
     """Change the access of a team to a repo"""
 
     def post(self):
-        
+
         # If user isn't logged in, send to auth
         if not self.session.get('logged_in'):
             self.redirect('/auth')
             return
-       
+
         edit_team(
-                self.request.get('team_name'), 
-                self.request.get('team_id'),
-                self.request.get('edit_type')
-        ) 
+            self.request.get('team_name'),
+            self.request.get('team_id'),
+            self.request.get('edit_type')
+        )
 
 
 class ChangeTeam(BaseHandler):
@@ -275,7 +271,7 @@ class ChangeTeam(BaseHandler):
     """
 
     def post(self):
-        
+
         # If user isn't logged in, send to auth
         if not self.session.get('logged_in'):
             self.redirect('/auth')
@@ -291,7 +287,7 @@ class ChangeTeam(BaseHandler):
         all_members = list(set(all_members) - set(team_members))
 
         response = {
-            'team_members': team_members, 
+            'team_members': team_members,
             'all_members': all_members
         }
 
@@ -299,7 +295,7 @@ class ChangeTeam(BaseHandler):
 
         # Send members lists back to app
         self.response.out.write(members)
-        
+
 
 class AddTeamMembers(BaseHandler):
     """Add a member of the org to the team"""
@@ -312,7 +308,7 @@ class AddTeamMembers(BaseHandler):
 
         # Add members to team
         _add_members_to_team(self.request.get('team_id'),
-            json.loads(self.request.get('users')))
+                             json.loads(self.request.get('users')))
 
         return
 
@@ -321,11 +317,10 @@ class RemoveTeamMember(BaseHandler):
     """Remove a member fo the org from a team"""
 
     def post(self):
-        
+
         # Remove member from team
         _remove_member_from_team(self.request.get('team_id'),
-                                 self.request.get('user')) 
-
+                                 self.request.get('user'))
 
 
 config = config()

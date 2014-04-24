@@ -14,7 +14,7 @@ from urlparse import urlparse
 from urlparse import parse_qs
 
 from google.appengine.api import urlfetch
-from google.appengine.api import users
+# from google.appengine.api import users
 
 sys.path.append("lib")
 
@@ -35,7 +35,7 @@ def fetch_url(url, method=urlfetch.GET, data=''):
     """Send a HTTP request"""
 
     result = urlfetch.fetch(url=url, method=method, payload=data,
-        headers={'Access-Control-Allow-Origin':'*'})
+                            headers={'Access-Control-Allow-Origin': '*'})
 
     return result.content
 
@@ -43,7 +43,7 @@ def fetch_url(url, method=urlfetch.GET, data=''):
 def get_user_name():
     """Get the name of the current user"""
 
-    url = '{}/user?access_token={}'.format(GITHUB_API_URL, get_access_token()) 
+    url = '{}/user?access_token={}'.format(GITHUB_API_URL, get_access_token())
 
     result = json.loads(fetch_url(url))
 
@@ -116,7 +116,7 @@ def _user_is_org_member():
 
     result = fetch_url(url)
 
-    if not '"login":"WebFilings"' in result:
+    if '"login":"WebFilings"' not in result:
         return False
 
     return True
@@ -126,12 +126,12 @@ def _user_is_org_admin():
     """Check that user belongs to owners team in org"""
 
     url = '{}/user/teams?access_token={}'.format(GITHUB_API_URL,
-                                                    get_access_token())
+                                                 get_access_token())
 
     result = fetch_url(url)
 
     # Check if user belongs to the Owners team
-    if not '"name":"Owners"' in result:
+    if '"name":"Owners"' not in result:
         _delete_access_token()
         return False
     return True
@@ -165,7 +165,7 @@ class AuthUser(webapp2.RequestHandler):
         # If User doesn't have Webfilings account, bail
         # if not users.get_current_user():
         #     self.redirect('/403')
-        #     self.error(403) 
+        #     self.error(403)
         #     return
 
         # Begin Google's flow workflow

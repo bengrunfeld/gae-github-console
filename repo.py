@@ -26,9 +26,9 @@ def _create_private_repo(name, description, private=True):
     """Create a private repo"""
 
     url = '{}/orgs/{}/repos?access_token={}'.format(GITHUB_API_URL,
-                                                    os.environ.get('ORG'), 
+                                                    os.environ.get('ORG'),
                                                     get_access_token())
-    
+
     fields = {
         "name": name,
         "description": description,
@@ -36,7 +36,7 @@ def _create_private_repo(name, description, private=True):
     }
 
     # Send request to Github's API
-    result = fetch_url(url, urlfetch.POST, json.dumps(fields))
+    fetch_url(url, urlfetch.POST, json.dumps(fields))
 
     # Create a log entry
     message = '{} created the {} repo'.format(get_user_name(), name)
@@ -47,14 +47,14 @@ class CreateRepo(BaseHandler):
     """Auth user and create a private repo"""
 
     def post(self):
-        
-        # Check user is logged in 
+
+        # Check user is logged in
         if not self.session.get('logged_in'):
             self.redirect('/auth')
             return
 
         # Send new repo data to create repo func
-        _create_private_repo(self.request.get('repo-name'), 
+        _create_private_repo(self.request.get('repo-name'),
                              self.request.get('repo-desc'))
 
         # Reload app
@@ -65,7 +65,7 @@ class GetRepoData(BaseHandler):
     """List teams with access to the repo"""
 
     def post(self):
-        
+
         # If data didn't come through, bail
         if not self.request.get('repo'):
             return
@@ -77,21 +77,20 @@ class GetRepoData(BaseHandler):
         # Get all teams with access to repo
         repo_teams = get_repo_teams(self.request.get('repo'))
 
-
         # Make a copy of all_teams, since teams will be modified
         teams = dict(all_teams)
 
-        # Remove all dupes from list 
+        # Remove all dupes from list
         teams = remove_dupes(teams, repo_teams)
 
         # Send back all_teams as well, for add/remove team member functionality
         data = dict([
-                ('teams', teams),
-                ('all_teams', all_teams),
-                ('team_collaborators', repo_teams)
-                ])
+            ('teams', teams),
+            ('all_teams', all_teams),
+            ('team_collaborators', repo_teams)
+        ])
 
-        # Send data back to app 
+        # Send data back to app
         self.response.out.write(json.dumps(data))
 
 
