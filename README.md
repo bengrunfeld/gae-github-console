@@ -11,8 +11,16 @@ Before uploading the app to GAE, open `app.yaml` and enter the exact name of the
 To set up the CRON job that sends a daily email to a specific address, enter the address to the right of the `ADMIN_EMAIL` environment variable. 
 
 Save and close `app.yaml`.
- 
-To activate the app once you've uploaded it to GAE, a user who belongs to the `Owners` team in the organization needs to log in via the console. They will be directed to the Github auth page, where they will need to provide their credentials. Once they have been authorized, their access token will be stored by the app in Google's Datastore and used by the app to perform actions (e.g. create new private repo) on their behalf.
+
+Next, go to [Github.com](http://github.com) and create an application. You'll need the `client_id` and `client_secret` for the next step.
+
+Create a file called `client_secrets.json` and fill it out according to the instructions at [https://developers.google.com/api-client-library/python/guide/aaa_client_secrets](https://developers.google.com/api-client-library/python/guide/aaa_client_secrets). 
+
+Since `client_secrets.json` is listed in the `.gitignore` file, it will **NOT** be committed via Git. 
+
+Upload the app to GAE.
+
+To activate the app, a user who belongs to the `Owners` team in the organization needs to log in via the console. They will be directed to the Github auth page, where they will need to provide their credentials. Once they have been authorized, their access token will be stored by the app in Google's Datastore and used by the app to perform actions (e.g. create new private repo) on their behalf.
 
 Any user belonging to the organization (i.e. not an admin) can then log in and access all the features of the app.
 
