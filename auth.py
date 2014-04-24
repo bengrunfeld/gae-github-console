@@ -232,21 +232,6 @@ class RetrieveToken(BaseHandler):
         self.render('login', context)
 
 
-class DeleteSessionsAndDb(BaseHandler):
-    """Delete all session vars and the access token in the db"""
-
-    def get(self):
-
-        # Kill all session data
-        self.session.clear()
-
-        # Store the access token, app is now activated
-        _delete_access_token()
-
-        # Redirect to Github logout
-        self.redirect('https://github.com/logout')
-
-
 class Logout(BaseHandler):
     """Clear session variables and send to Github logout page"""
 
@@ -265,6 +250,5 @@ app = webapp2.WSGIApplication([
     ('/', DetectActivation),
     ('/auth', AuthUser),
     ('/code', RetrieveToken),
-    ('/del', DeleteSessionsAndDb),
     ('/logout', Logout),
 ], config=config, debug=True)
