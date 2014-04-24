@@ -14,6 +14,7 @@ from auth import get_user_name
 from basehandler import BaseHandler
 from config import config
 from logs import create_log
+from teams import add_team
 from teams import get_all_teams
 from teams import get_repo_teams
 from teams import remove_dupes
@@ -43,6 +44,13 @@ def _create_private_repo(name, description, private=True):
     create_log(message)
 
 
+def _auto_add_teams_to_repo(repo, teams):
+    """Automatically adds specified teams to newly created repositories"""
+
+    for team in teams:
+        add_team(team, repo)
+
+
 class CreateRepo(BaseHandler):
     """Auth user and create a private repo"""
 
@@ -56,6 +64,11 @@ class CreateRepo(BaseHandler):
         # Send new repo data to create repo func
         _create_private_repo(self.request.get('repo-name'),
                              self.request.get('repo-desc'))
+
+        # Automatically add set teams to the new private repo
+        teams = []  # Add team id's here
+
+        _auto_add_teams_to_repo(self.request.get('repo-name'), teams)
 
         # Reload app
         self.redirect('/app')
