@@ -42,7 +42,7 @@ A regular digest of all logs is sent out automagically to the specified recipien
 
 #### Editing access to a private repo
 
-Next to the listing of each private repo, there is an `Edit Access` button. Clicking on it will bring up a modal that allows the user to add a team belonging to the organization to the repo. Once added, the user can then change the access permission of that team. Not that this changes the access of the team to all other repositories that it is connected to.
+Next to the listing of each private repo, there is an `Edit Access` button. Clicking on it will bring up a modal that allows the user to add a team belonging to the organization to the repo. Once added, the user can then change the access permission of that team. Note that this changes the access of the team to all other repositories that it is connected to.
 
 Access levels can be either `Push` or `Pull`.
 
