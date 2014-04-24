@@ -2,9 +2,11 @@
 
 The WebFilings Github Console allows the members of the organization who do not possess admin rights to create private repositories, add and remove teams from those repositories, and add and remove users from those teams.
 
+The app can be set up so that certain teams are automatically added to a newly created private repository.
+
 The console also provides logs of what actions were performed by which user. These logs can be filtered by date range. A regular digest of logs can be sent to a specific email as a CRON job. The filtered logs can be manually emailed to a specific email address.
 
-## Activate the app
+## Activate and set up the app
 
 Before uploading the app to GAE, open `app.yaml` and enter the exact name of the Github organization in the space to the right of the `ORG` environment variable.
 
@@ -17,6 +19,8 @@ Next, go to [Github.com](http://github.com) and create an application. You'll ne
 Create a file called `client_secrets.json` and fill it out according to the instructions at [https://developers.google.com/api-client-library/python/guide/aaa_client_secrets](https://developers.google.com/api-client-library/python/guide/aaa_client_secrets). 
 
 Since `client_secrets.json` is listed in the `.gitignore` file, it will **NOT** be committed via Git. 
+
+To automatically add certain teams to new private repositories, get the id's of the teams, and place them in a comma separated format within the square brackets in `repo.py` on line `69`.  
 
 Upload the app to GAE.
 
