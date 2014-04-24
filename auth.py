@@ -5,6 +5,7 @@ Use the Google Flow workflow to walk through each stage of the OAuth 2.0
 process.
 """
 
+import json
 import os
 import sys
 import webapp2
@@ -37,6 +38,16 @@ def fetch_url(url, method=urlfetch.GET, data=''):
         headers={'Access-Control-Allow-Origin':'*'})
 
     return result.content
+
+
+def get_user_name():
+    """Get the name of the current user"""
+
+    url = '{}/user?access_token={}'.format(GITHUB_API_URL, get_access_token()) 
+
+    result = json.loads(fetch_url(url))
+
+    return result['login']
 
 
 def _create_flow_object():
@@ -114,8 +125,7 @@ def _user_is_org_member():
 def _user_is_org_admin():
     """Check that user belongs to owners team in org"""
 
-    url = '{}/orgs/{}/teams?access_token={}'.format(GITHUB_API_URL,
-                                                    _get_org_name(),
+    url = '{}/user/teams?access_token={}'.format(GITHUB_API_URL,
                                                     get_access_token())
 
     result = fetch_url(url)
@@ -124,7 +134,6 @@ def _user_is_org_admin():
     if not '"name":"Owners"' in result:
         _delete_access_token()
         return False
-
     return True
 
 
@@ -216,7 +225,7 @@ class RetrieveToken(BaseHandler):
 
         context = {
             "access_token": credentials.access_token,
-            "username": "admin",
+            "username": get_user_name(),
         }
 
         # Tell user that the app is activated
@@ -234,6 +243,8 @@ class DeleteSessionsAndDb(BaseHandler):
         # Store the access token, app is now activated
         _delete_access_token()
 
+        # Redirect to Github logout
+        self.redirect('https://github.com/logout')
 
 
 class Logout(BaseHandler):

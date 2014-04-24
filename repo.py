@@ -10,6 +10,7 @@ from google.appengine.api import urlfetch
 
 from auth import fetch_url
 from auth import get_access_token
+from auth import get_user_name
 from basehandler import BaseHandler
 from config import config
 from logs import create_log
@@ -19,16 +20,6 @@ from teams import remove_dupes
 
 
 GITHUB_API_URL = 'https://api.github.com'
-
-
-def _get_user_name():
-    """Get the name of the current user"""
-
-    url = '{}/user?access_token={}'.format(GITHUB_API_URL, get_access_token()) 
-
-    result = json.loads(fetch_url(url))
-
-    return result['login']
 
 
 def _create_private_repo(name, description, private=True):
@@ -48,7 +39,7 @@ def _create_private_repo(name, description, private=True):
     result = fetch_url(url, urlfetch.POST, json.dumps(fields))
 
     # Create a log entry
-    message = '{} created the {} repo'.format(_get_user_name(), name)
+    message = '{} created the {} repo'.format(get_user_name(), name)
     create_log(message)
 
 

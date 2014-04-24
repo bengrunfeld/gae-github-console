@@ -8,8 +8,9 @@ import json
 
 from google.appengine.api import urlfetch
 
-from auth import get_access_token
 from auth import fetch_url
+from auth import get_access_token
+from auth import get_user_name
 from basehandler import BaseHandler
 from config import config
 
@@ -48,7 +49,7 @@ class RenderApp(BaseHandler):
         data = _get_front_page_data()
 
         # Put data into context
-        context = {"repos": data}
+        context = {"repos": data, "username": get_user_name()}
     
         # Render the app
         self.render('index', context)
