@@ -34,8 +34,13 @@ GITHUB_API_URL = 'https://api.github.com'
 def fetch_url(url, method=urlfetch.GET, data=''):
     """Send a HTTP request"""
 
-    result = urlfetch.fetch(url=url, method=method, payload=data,
-                            headers={'Access-Control-Allow-Origin': '*'})
+    try:
+        result = urlfetch.fetch(url=url, method=method, payload=data,
+                                headers={'Access-Control-Allow-Origin': '*'})
+    except Error:
+        self.redirect('/404')
+        self.error(504)
+        return
 
     return result.content
 

@@ -105,6 +105,17 @@ def add_team(team_id, repo):
     create_log(message)
 
 
+def _append_to_response(entities):
+    """Append values to a list"""
+
+    response = []
+
+    for entity in entities:
+        response.append(entity.get('login'))
+
+    return response
+
+
 def remove_team(team_id, repo):
     """Remove team access from a repo"""
 
@@ -158,10 +169,7 @@ def get_team_members(team_id):
 
     team_members = json.loads(fetch_url(url))
 
-    response = []
-
-    for team_member in team_members:
-            response.append(team_member.get('login'))
+    response = _append_to_response(team_members)
 
     return response
 
@@ -176,10 +184,7 @@ def get_all_org_members():
 
     all_members = json.loads(fetch_url(url))
 
-    response = []
-
-    for member in all_members:
-            response.append(member.get('login'))
+    response = _append_to_response(all_members)
 
     return response
 
