@@ -28,9 +28,9 @@ handlers:
 
 - url: /.*
   script: auth.app  
-  # login: required
-  # auth_fail_action: unauthorized
-  # secure: always
+  login: required
+  auth_fail_action: unauthorized
+  secure: always
 
 env_variables:
   ORG: # Org name goes here
