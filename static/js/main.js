@@ -122,6 +122,7 @@ $(function(){
             data: { "repo": repo, "team_id": team_id, "team_name": team_name },
             success: function(data) {
                 var repo_name = repo;
+                unbind_events();
                 get_data(repo_name);
             }
         });
@@ -146,6 +147,7 @@ $(function(){
             data: { "repo": repo, "team_id": team_id, "team_name": team_name },
             success: function(data) {
                 var repo_name = repo;
+                unbind_events();
                 get_data(repo_name);
             }
         });
@@ -173,6 +175,7 @@ $(function(){
             data: { "team_id" : team_id, "team_name": team_name, "edit_type" : edit_type },
             success: function(data) {
                 var repo_name = repo;
+                unbind_events();
                 get_data(repo_name);
             }
         });

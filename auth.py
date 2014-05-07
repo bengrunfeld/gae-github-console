@@ -136,6 +136,12 @@ def _user_is_org_admin():
         return False
     return True
 
+def _check_app_config():
+    """Check that Org name in app.yaml is legit"""
+
+    # TODO: Test if org exists on GitHub
+    return True
+
 
 class DetectActivation(BaseHandler):
     """Detect if the app is set up"""
@@ -166,6 +172,11 @@ class AuthUser(webapp2.RequestHandler):
 
         if not user:
             self.redirect(users.create_login_url(self.request.uri))
+            return
+
+        # Check if Org name in app.yaml is legit
+        if not _check_app_config():
+            self.error(500)
             return
 
         # Begin Google's flow workflow
