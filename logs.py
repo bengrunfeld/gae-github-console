@@ -145,8 +145,7 @@ class EmailLogs(webapp2.RequestHandler):
         # Check SMTP server by adding `check_mx=True`
         # Verify that email exists by adding `verify=True`
         if not validate_email(user_addresses):
-            status = json.dumps('invalid')
-            self.response.out.write(status)
+            self.response.out.write('invalid')
             return
 
         # Format logs so that they contain newline characters
@@ -155,8 +154,7 @@ class EmailLogs(webapp2.RequestHandler):
         # If email logs is successful, send success message to user
         send_email(user_addresses, formatted_logs)
 
-        status = json.dumps('success')
-        self.response.out.write(status)
+        self.response.out.write('success')
 
 
 class LogDigest(webapp2.RequestHandler):

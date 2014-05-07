@@ -401,9 +401,8 @@ $(function(){
             url: "/email-logs",
             data: { "addresses" : addresses, "logs": logs},
             success: function(data) {
-                var status = JSON.parse(data);
                 
-                switch(status) {
+                switch(data) {
                     case 'invalid':
                         // Place red border around input box
                         $('.email-logs-form').removeClass('has-success');
