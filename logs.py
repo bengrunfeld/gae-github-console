@@ -85,7 +85,7 @@ def show_filtered_logs(from_date, to_date):
     result = []
 
     for q in qry.run():
-        result.append(str(q.input_datetime) + ' ' + q.content)
+        result.append(' '.join([str(q.input_datetime), q.content]))
 
     return result
 
@@ -93,12 +93,7 @@ def show_filtered_logs(from_date, to_date):
 def format_logs(logs):
     """Place newline characters at the end of each line"""
 
-    content = ''
-
-    for log in logs:
-        content += str(log) + '\n'
-
-    return content
+    return '\n'.join(map(str, logs))
 
 
 def send_email(user_address, logs):
