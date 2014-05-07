@@ -4,6 +4,7 @@ to be performed.
 """
 
 import os
+import json
 
 import jinja2
 import webapp2
@@ -54,3 +55,10 @@ class BaseHandler(webapp2.RequestHandler):
 
         template = JINJA_ENVIRONMENT.get_template(template_name)
         self.response.write(template.render(context))
+
+
+class JsonHandler(webapp2.RequestHandler):
+    """Dump outgoing JSON then send it"""
+
+    def send_json(self, payload, **kwargs):
+        self.response.out.write(json.dumps(payload, **kwargs))
