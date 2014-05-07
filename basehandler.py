@@ -60,5 +60,6 @@ class BaseHandler(webapp2.RequestHandler):
 class JsonHandler(webapp2.RequestHandler):
     """Dump outgoing JSON then send it"""
 
+    # TODO: Possibly implement this across app
     def send_json(self, payload, **kwargs):
         self.response.out.write(json.dumps(payload, **kwargs))
