@@ -15,6 +15,7 @@ from urlparse import parse_qs
 
 from google.appengine.api import urlfetch
 from google.appengine.api import users
+from google.appengine.api import apiproxy_stub_map
 
 sys.path.append("lib")
 
