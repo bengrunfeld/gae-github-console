@@ -15,7 +15,7 @@ handlers:
   static_dir: static
 
 - url: /.*
-  script: main.app  
+  script: base.app  
   login: required
   # auth_fail_action: unauthorized
   secure: always

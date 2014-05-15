@@ -1,3 +1,7 @@
+"""
+Append the lib path so that 3rd party libraries are accesible
+"""
+
 import os
 import sys
 
