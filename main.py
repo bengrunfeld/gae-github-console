@@ -11,4 +11,5 @@ def setup_project():
 
 setup_project()
 
+# Import main app file
 from console.main import app
