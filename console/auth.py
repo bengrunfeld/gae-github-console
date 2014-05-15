@@ -15,7 +15,6 @@ from urlparse import parse_qs
 
 from google.appengine.api import urlfetch
 from google.appengine.api import users
-from google.appengine.api import apiproxy_stub_map
 
 sys.path.append("lib")
 
@@ -24,7 +23,6 @@ from oauth2client.client import OAuth2WebServerFlow
 from oauth2client.appengine import StorageByKeyName
 
 from basehandler import BaseHandler
-from config import config
 from model import CredentialsModel
 
 
@@ -136,6 +134,7 @@ def _user_is_org_admin():
         _delete_access_token()
         return False
     return True
+
 
 def _check_app_config():
     """Check that Org name in app.yaml is legit"""

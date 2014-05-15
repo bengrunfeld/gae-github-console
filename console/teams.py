@@ -3,7 +3,6 @@ All actions concerning teams
 """
 
 import os
-import webapp2
 import json
 
 from google.appengine.api import urlfetch
@@ -11,7 +10,6 @@ from google.appengine.api import urlfetch
 from auth import fetch_url
 from auth import get_access_token
 from basehandler import BaseHandler
-from config import config
 from logs import create_log
 
 

@@ -3,14 +3,12 @@ Render the front end of the app
 """
 
 import os
-import webapp2
 import json
 
 from auth import fetch_url
 from auth import get_access_token
 from auth import get_user_name
 from basehandler import BaseHandler
-from config import config
 
 
 def _get_front_page_data():

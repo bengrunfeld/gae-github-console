@@ -12,6 +12,6 @@ def setup_project():
 setup_project()
 
 # Import main app file
-from routes import route_user 
+from routes import route_user
 
 app = route_user()

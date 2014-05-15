@@ -14,7 +14,7 @@ def route_user():
     """Route user to correct handler"""
 
     return webapp2.WSGIApplication([
-        webapp2.Route('/create-repo', 
+        webapp2.Route('/create-repo',
                       handler='console.repo.CreateRepo',
                       name='create_repo'),
         webapp2.Route('/get-data-repo',
@@ -56,7 +56,7 @@ def route_user():
         webapp2.Route('/logout',
                       handler='console.auth.Logout',
                       name='logout'),
-        webapp2.Route('/', 
-                      handler='console.main.RenderApp', 
+        webapp2.Route('/',
+                      handler='console.main.RenderApp',
                       name='main_app'),
     ], config=config())

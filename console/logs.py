@@ -17,7 +17,6 @@ from datetime import timedelta
 from google.appengine.api import mail
 from validate_email import validate_email
 
-from config import config
 from model import Log
 
 

@@ -3,7 +3,6 @@ Create a new private repo belonging to the organization
 """
 
 import os
-import webapp2
 import json
 
 from google.appengine.api import urlfetch
@@ -12,7 +11,6 @@ from auth import fetch_url
 from auth import get_access_token
 from auth import get_user_name
 from basehandler import BaseHandler
-from config import config
 from logs import create_log
 from teams import add_team
 from teams import get_all_teams
