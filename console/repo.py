@@ -105,11 +105,3 @@ class GetRepoData(BaseHandler):
 
         # Send data back to app
         self.response.out.write(json.dumps(data))
-
-
-# config = config()
-# 
-# app = webapp2.WSGIApplication([
-#     ('/create-repo', CreateRepo),
-#     ('/get-data-repo', GetRepoData),
-# ], config=config, debug=True)
