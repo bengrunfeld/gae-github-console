@@ -52,10 +52,3 @@ class RenderApp(BaseHandler):
 
         # Render the app
         self.render('index', context)
-
-
-config = config()
-
-app = webapp2.WSGIApplication([
-    ('/app', RenderApp),
-], config=config, debug=True)

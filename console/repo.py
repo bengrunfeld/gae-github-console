@@ -71,7 +71,7 @@ class CreateRepo(BaseHandler):
         _auto_add_teams_to_repo(self.request.get('repo-name'), teams)
 
         # Reload app
-        self.redirect('/app')
+        self.redirect('/')
 
 
 class GetRepoData(BaseHandler):
@@ -107,9 +107,9 @@ class GetRepoData(BaseHandler):
         self.response.out.write(json.dumps(data))
 
 
-config = config()
-
-app = webapp2.WSGIApplication([
-    ('/create-repo', CreateRepo),
-    ('/get-data-repo', GetRepoData),
-], config=config, debug=True)
+# config = config()
+# 
+# app = webapp2.WSGIApplication([
+#     ('/create-repo', CreateRepo),
+#     ('/get-data-repo', GetRepoData),
+# ], config=config, debug=True)

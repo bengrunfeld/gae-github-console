@@ -170,12 +170,3 @@ class LogDigest(webapp2.RequestHandler):
         formatted_logs = format_logs(logs)
 
         send_email(os.environ.get('ADMIN_EMAIL', formatted_logs))
-
-
-config = config()
-
-app = webapp2.WSGIApplication([
-    ('/display-logs', DisplayLogs),
-    ('/email-logs', EmailLogs),
-    ('/digest-logs', LogDigest),
-], config=config, debug=True)

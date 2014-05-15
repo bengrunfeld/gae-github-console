@@ -326,15 +326,3 @@ class RemoveTeamMember(BaseHandler):
         # Remove member from team
         _remove_member_from_team(self.request.get('team_id'),
                                  self.request.get('user'))
-
-
-config = config()
-
-app = webapp2.WSGIApplication([
-    ('/add-team', AddTeam),
-    ('/remove-team', RemoveTeam),
-    ('/edit-team', EditTeam),
-    ('/change-team', ChangeTeam),
-    ('/add-members-team', AddTeamMembers),
-    ('/remove-member-team', RemoveTeamMember),
-], config=config, debug=True)

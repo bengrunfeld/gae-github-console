@@ -160,7 +160,7 @@ class DetectActivation(BaseHandler):
             return
 
         # Everything checks out, send user to auth
-        self.redirect('/app')
+        self.redirect('/')
 
 
 class AuthUser(webapp2.RequestHandler):
@@ -212,7 +212,7 @@ class RetrieveToken(BaseHandler):
             else:
                 # User is now logged in, send to app
                 self.session['logged_in'] = True
-                self.redirect('/app')
+                self.redirect('/')
                 return
 
         # Get the code out of the url
@@ -254,13 +254,3 @@ class Logout(BaseHandler):
 
         # Redirect to Github logout
         self.redirect('https://github.com/logout')
-
-
-config = config()
-
-app = webapp2.WSGIApplication([
-    ('/', DetectActivation),
-    ('/auth', AuthUser),
-    ('/code', RetrieveToken),
-    ('/logout', Logout),
-], config=config, debug=True)
