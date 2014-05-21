@@ -30,9 +30,6 @@ class TestUrlFetch(BaseTestUrlFetch):
         # Grab content via a URL fetch
         content = fetch_url('https://google.com')
 
-        # Test if init_urlfetch_stub is working. Use `nosetests --nocapture`
-        print(content)
-
         # Test that content is not empty
         self.assertIsNotNone(content)
 
@@ -41,8 +38,13 @@ class TestGetUserName(unittest.TestCase):
     """Test that a valid username is being returned"""
 
     def test_get_username(self):
-        pass
-    
+        from console.auth import get_user_name
 
-if __name__ == '__main__':
-    unittest.main()
+        # Request username from GitHub 
+        content = get_user_name()
+
+        # Print content
+        print(content)
+
+        # Test that response does not equal error
+        assertIsNotNone(content)

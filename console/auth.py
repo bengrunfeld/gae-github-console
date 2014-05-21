@@ -46,6 +46,10 @@ def get_user_name():
 
     result = json.loads(fetch_url(url))
 
+    # Early exit if login not set
+    if not 'login' in result:
+        return False
+
     return result['login']
 
 
