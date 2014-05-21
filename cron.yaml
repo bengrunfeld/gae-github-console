@@ -1,0 +1,5 @@
+cron:
+- description: daily email log digest
+  url: /log-digest
+  timezone: US/Central
+  schedule: every 24 hours

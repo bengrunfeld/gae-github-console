@@ -4,12 +4,13 @@
 
     <div style="height:50px"></div>
 
-    <div class="col-sm-3 .col-sm-offset-2 col-xs-12 pull-right repo-button">
+    <div class="col-xs-12 repo-button">
         <button type="button" class="btn btn-lg btn-primary" data-toggle="modal" data-target="#create_repo">Create Private Repo</button>
-        <button type="button" class="btn btn-lg btn-default logs-btn" data-toggle="modal" data-target="#logs">Display Logs</button>
+        <br>
+        <button type="button" class="btn btn-lg btn-default logs-btn display-logs" data-toggle="modal" data-target="#logs">Display Logs</button>
     </div>
 
-    <div class="repos col-sm-7 col-xs-12">
+    <div class="repos col-xs-12">
         <div class="panel panel-default repo-names">
             <div class="panel-heading"><h4>Private Repositories belonging to <strong>{{ org }}</strong></h4></div>
 
@@ -72,25 +73,79 @@
                             <h3 class="panel-title">Recent Logs</h3>
                         </div>
                         <ul class="list-group list-logs">
-                            <li class="list-group-item"><i>2014-03-20 17:21:29,422</i> Team <b>team kasava</b> was added to the <b>tinysky</b> repo</li>
-                            <li class="list-group-item"><i>2014-03-20 17:21:29,422</i> User <b>mattcutts</b> was added to the <b>team kasava</b> team</li>
-                            <li class="list-group-item"><i>2014-03-20 17:21:29,422</i> Team <b>team avatar</b> was changed to have <b>admin</b> access</li>
                         </ul>
                     </div>
 
-                    <!-- Delete this -->
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Date Range</h3>
+                        </div>
+                        <div class="panel-body">
+                            <p><b>From-Date</b></p>
+                            <div class="from-date">
+                                <select class="form-control logs-date from-date-year">
+                                    <option class="log-date-year" selected="selected">Year</option>
+                                </select>
+
+                                <select class="form-control logs-date from-date-month">
+                                    <option class="log-date-month" selected="selected">Month</option>
+                                </select>
+
+                                <select class="form-control logs-date from-date-day">
+                                    <option class="log-date-day" selected="selected">Day</option>
+                                </select>
+
+                                <select class="form-control logs-time from-date-hour">
+                                    <option class="log-date-hour" selected="selected">Hour</option>
+                                </select>
+
+                                <select class="form-control logs-time from-date-minute">
+                                    <option class="log-date-minute" selected="selected">Minute</option>
+                                </select>
+
+                                <div style="clear:both;"></div>
+                            </div>
+
+                            <div class="to-date">
+                                <p><b>To-Date</b></p>
+                                <select class="form-control logs-date to-date-year">
+                                    <option class="log-date-year" selected="selected">Year</option>
+                                </select>
+
+                                <select class="form-control logs-date to-date-month">
+                                    <option class="log-date-month" selected="selected">Month</option>
+                                </select>
+
+                                <select class="form-control logs-date to-date-day">
+                                    <option class="log-date-day" selected="selected">Day</option>
+                                </select>
+
+                                <select class="form-control logs-time to-date-hour">
+                                    <option class="log-date-hour" selected="selected">Hour</option>
+                                </select>
+
+                                <select class="form-control logs-time to-date-minute">
+                                    <option class="log-date-minute" selected="selected">Minute</option>
+                                </select>
+
+                                <div style="clear:both;"></div>
+                            </div>
+
+                            <button type="button" class="btn btn-success add-date-filter pull-right">Filter</button>
+                            <button type="button" class="btn btn-danger reset-date-filter pull-right">Reset</button>
+                        </div>
+                    </div>
+
                     <div class="panel panel-primary">
                         <div class="panel-heading">
                             <h3 class="panel-title">Email Logs</h3>
                         </div>
                         <div class="panel-body">
-                            <form role="form">
-                                <div class="form-group">
-                                    <label for="exampleInputEmail1">Email address</label>
-                                    <input type="email" class="form-control" id="exampleInputEmail1" placeholder="Enter email">
-                                </div>
-                                <button type="submit" class="btn btn-default">Send Email</button>
-                            </form>
+                            <div class="form-group email-logs-form">
+                                <label for="inputEmail">Email address</label>
+                                <input type="email" class="form-control" id="inputEmail" placeholder="Enter email">
+                            </div>
+                            <button class="btn btn-default email-logs">Send Email</button>
                         </div>
                     </div>
 
@@ -120,8 +175,8 @@
                 <div class="modal-body">
                     <!-- Nav tabs -->
                     <ul class="nav nav-tabs edit-access-tabs">
-                        <li class="active"><a href="#teams" data-toggle="tab">Teams</a></li>
-                        <li><a href="#team-members" data-toggle="tab">Team Members</a></li>
+                        <li class="active"><a href="#teams" id="teams-toggle" data-toggle="tab">Teams</a></li>
+                        <li><a href="#team-members" id="team-members-toggle" data-toggle="tab">Team Members</a></li>
                     </ul>
 
                     <!-- Tab panes -->
@@ -142,7 +197,7 @@
                                 </div>
                                 <div class="panel-body">
                                     <select class="form-control list-all-teams">
-                                        <option selected="selected">Select a team...</option>
+                                        <option class="select-team" selected="selected">Select a team...</option>
                                     </select>
                                 </div>
                             </div>
@@ -152,8 +207,6 @@
                                     <h3 class="panel-title">Team Members</h3>
                                 </div>
                                 <ul class="list-group list-team-members">
-                                    <li class="list-group-item">mattcutts<button class="btn btn-danger btn-sm team-btn make-pull pull-right">Remove</button></li>
-                                    <li class="list-group-item">guido<button class="btn btn-danger btn-sm team-btn make-pull pull-right">Remove</button></li>
                                 </ul>                                
                             </div>
 
@@ -166,12 +219,14 @@
                                         <option disabled selected="selected">Select members...</option>
                                     </select>
                                 </div>
-                            </div>                            
+                            </div>
+                            <button type="button" class="btn btn-success add-team-members pull-right">Add</button>
+                            <div style="clear:both;"></div>                          
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-default edit-access-close" data-dismiss="modal">Close</button>
                 </div>
 
             </div>
