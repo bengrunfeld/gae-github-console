@@ -1,0 +1,18 @@
+{% extends "templates/base.html" %}
+{% block content %}
+<div class="container">
+
+<h1>{{ error_code }} - There was an error</h1>
+
+<h3>{{ error_desc }}</h3>
+
+<button type="button" class="btn btn-lg btn-success logout_btn" onclick="window.location='/'">Reload App</button>
+<button type="button" class="btn btn-lg btn-danger logout_btn" onclick="window.location='/logout'">Logout of Github</button>
+
+<hr>
+
+<footer>
+  <p>&copy; Company 2013</p>
+</footer>
+</div> <!-- .container -->
+{% endblock content %}
