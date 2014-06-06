@@ -24,6 +24,7 @@ from oauth2client.appengine import StorageByKeyName
 
 from basehandler import BaseHandler
 from model import CredentialsModel
+from statsd import StatsdClient 
 
 
 GITHUB_ORGS_MEMBER_URL = 'https://api.github.com/user/orgs'
@@ -33,8 +34,13 @@ GITHUB_API_URL = 'https://api.github.com'
 def fetch_url(url, method=urlfetch.GET, data=''):
     """Send a HTTP request"""
 
+    # Count HTTP requests and send data to StatsD 
+    client = StatsdClient()
+    client.increment('somename.someval')    
+ 
     result = urlfetch.fetch(url=url, method=method, payload=data,
                             headers={'Access-Control-Allow-Origin': '*'})
+
 
     if result.status_code == 200:
         return result.content
