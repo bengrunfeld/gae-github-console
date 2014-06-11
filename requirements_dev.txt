@@ -1,2 +1,5 @@
-gae-link-libs
-
+nose
+nose-exclude
+mock
+gae-link-libs>=0.9.11
+coverage

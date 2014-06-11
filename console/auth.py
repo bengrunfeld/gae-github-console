@@ -30,14 +30,34 @@ GITHUB_ORGS_MEMBER_URL = 'https://api.github.com/user/orgs'
 GITHUB_API_URL = 'https://api.github.com'
 
 
-def fetch_url(url, method=urlfetch.GET, data=''):
+def fetch_url(**kwargs):
     """Send a HTTP request"""
 
-    result = urlfetch.fetch(url=url, method=method, payload=data,
-                            headers={'Access-Control-Allow-Origin': '*'})
+    # WARN: This is bad. Overriding callers control header.
+    kwargs['Access-Control-Allow-Origin'] = '*'
 
-    if result.status_code == 200:
-        return result.content
+    return urlfetch.fetch(**kwargs)
+
+
+def is_successful_request(request_result):
+    return request_result.status_code == 200
+
+
+class JsonResult():
+
+    def __init__(payload=None, failed=False):
+        self.paylaod = payload
+        self.failed = failed
+
+
+def make_json_request(error_handler, url, **kwargs):
+
+    request_result = fetch_url(url=url, **kwargs)
+
+    if is_successful_request(request_result):
+        return JsonResult(json.loads(request_result.content))
+
+    return JsonResult(payload="Things are wrong.", failed=True)
 
 
 def get_user_name():
@@ -199,7 +219,13 @@ class AuthUser(webapp2.RequestHandler):
             return
 
         self.redirect(auth_uri)
-        return
+
+        result = make_json_request("fake_url")
+
+        if result.failed:
+            self.redirect(auth_uri)
+        else:
+            self.render(result.payload)
 
 
 class RetrieveToken(BaseHandler):
