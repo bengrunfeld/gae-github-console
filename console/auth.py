@@ -55,7 +55,7 @@ def make_json_request(url, **kwargs):
     request_result = fetch_url(url=url, **kwargs)
 
     if is_successful_request(request_result):
-        return JsonResult(json.loads(request_result.content)).payload
+        return JsonResult(request_result.content)
 
     return JsonResult(payload="Things are wrong.", failed=True)
 
@@ -66,7 +66,8 @@ def get_user_name():
     url = '{}/user?access_token={}'.format(GITHUB_API_URL, get_access_token())
 
     # result = json.loads(fetch_url(url))
-    result = make_json_request(url) 
+    response = make_json_request(url)
+    result = json.loads(response.payload)
 
     # Early exit if login not set
     if 'login' not in result:
@@ -141,7 +142,7 @@ def _user_is_org_member():
 
     result = make_json_request(url)
 
-    if '"login":"WebFilings"' not in result:
+    if '"login":"WebFilings"' not in result.payload:
         return False
 
     return True
@@ -156,7 +157,7 @@ def _user_is_org_admin():
     result = make_json_request(url)
 
     # Check if user belongs to the Owners team
-    if '"name":"Owners"' not in result:
+    if '"name":"Owners"' not in result.payload:
         _delete_access_token()
         return False
     return True

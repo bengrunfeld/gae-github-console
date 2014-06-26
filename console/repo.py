@@ -36,8 +36,7 @@ def _create_private_repo(name, description, private=True):
 
     # Send request to Github's API
     # fetch_url(url, urlfetch.POST, json.dumps(fields))
-    result = make_json_request(url, method=urlfetch.POST, 
-                                    payload=json.dumps(fields))
+    make_json_request(url, method=urlfetch.POST, payload=json.dumps(fields))
 
     # Create a log entry
     message = '{} created the {} repo'.format(get_user_name(), name)

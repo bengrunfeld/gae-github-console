@@ -7,7 +7,7 @@ import json
 
 from google.appengine.api import urlfetch
 
-from auth import fetch_url
+from auth import make_json_request
 from auth import get_access_token
 from basehandler import BaseHandler
 from logs import create_log
@@ -24,7 +24,9 @@ def get_all_teams():
                                                     os.environ.get('ORG'),
                                                     get_access_token())
     # Fetch results from Github
-    content = json.loads(fetch_url(url))
+    # content = json.loads(fetch_url(url))
+    result = make_json_request(url)
+    content = json.loads(result.payload)
 
     # Create a dict to store results
     response = {}
@@ -46,7 +48,9 @@ def get_repo_teams(repo):
                                                         get_access_token())
 
     # Fetch results from Github
-    content = json.loads(fetch_url(url))
+    # content = json.loads(fetch_url(url))
+    result = make_json_request(url)
+    content = json.loads(result.payload)
 
     # Create a dict to store results
     response = {}
@@ -78,7 +82,9 @@ def _get_team_name(team_id):
                                                get_access_token())
 
     # Retrieve team name from result
-    result = json.loads(fetch_url(url))
+    # result = json.loads(fetch_url(url))
+    response = make_json_request(url)
+    result = json.loads(response.payload)
 
     return result['name']
 
@@ -95,7 +101,8 @@ def add_team(team_id, repo):
           get_access_token())
 
     # Give repo access to team
-    fetch_url(url, urlfetch.PUT)
+    # fetch_url(url, urlfetch.PUT)
+    make_json_request(url, method=urlfetch.PUT)
 
     # Create a log entry
     message = '{} was added to the {} repo'.format(_get_team_name(team_id),
@@ -126,7 +133,8 @@ def remove_team(team_id, repo):
           get_access_token())
 
     # Remove repo access from a team
-    fetch_url(url, urlfetch.DELETE)
+    # fetch_url(url, urlfetch.DELETE)
+    make_json_request(url, method=urlfetch.DELETE)
 
     # Create a log entry
     message = '{} was removed from the {} repo'.format(_get_team_name(team_id),
@@ -148,7 +156,9 @@ def edit_team(team_name, team_id, edit_type):
         "permission": edit_type,
     }
 
-    fetch_url(url, urlfetch.PATCH, json.dumps(fields))
+    # fetch_url(url, urlfetch.PATCH, json.dumps(fields))
+    make_json_request(url, method=urlfetch.PATCH,
+                      payload=json.dumps(fields))
 
     # Create a log entry
     message = '{} was given {} access'.format(team_name, edit_type)
@@ -165,7 +175,9 @@ def get_team_members(team_id):
           team_id,
           get_access_token())
 
-    team_members = json.loads(fetch_url(url))
+    # team_members = json.loads(fetch_url(url))
+    result = make_json_request(url)
+    team_members = json.loads(result.payload)
 
     response = _append_to_response(team_members)
 
@@ -180,7 +192,9 @@ def get_all_org_members():
                                                       os.environ.get('ORG'),
                                                       get_access_token())
 
-    all_members = json.loads(fetch_url(url))
+    # all_members = json.loads(fetch_url(url))
+    result = make_json_request(url)
+    all_members = json.loads(result.payload)
 
     response = _append_to_response(all_members)
 
@@ -197,7 +211,8 @@ def _add_members_to_team(team_id, members):
               member,
               get_access_token())
 
-        fetch_url(url, urlfetch.PUT)
+        # fetch_url(url, urlfetch.PUT)
+        make_json_request(url, method=urlfetch.PUT)
 
     # Create a log entry
     message = '{} was added to {}'.format(members, _get_team_name(team_id))
@@ -214,7 +229,8 @@ def _remove_member_from_team(team_id, member):
           member,
           get_access_token())
 
-    fetch_url(url, urlfetch.DELETE)
+    # fetch_url(url, urlfetch.DELETE)
+    make_json_request(url, method=urlfetch.DELETE)
 
     # Create a log entry
     message = '{} was removed from {}'.format(member, _get_team_name(team_id))
