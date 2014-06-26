@@ -7,9 +7,9 @@ import json
 
 from google.appengine.api import urlfetch
 
-from auth import fetch_url
 from auth import get_access_token
 from auth import get_user_name
+from auth import make_json_request
 from basehandler import BaseHandler
 from logs import create_log
 from teams import add_team
@@ -35,7 +35,9 @@ def _create_private_repo(name, description, private=True):
     }
 
     # Send request to Github's API
-    fetch_url(url, urlfetch.POST, json.dumps(fields))
+    # fetch_url(url, urlfetch.POST, json.dumps(fields))
+    result = make_json_request(url, method=urlfetch.POST, 
+                                    payload=json.dumps(fields))
 
     # Create a log entry
     message = '{} created the {} repo'.format(get_user_name(), name)
