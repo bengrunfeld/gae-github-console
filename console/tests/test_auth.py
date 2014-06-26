@@ -13,10 +13,8 @@ from mock import patch
 class TestUrlfetchFunctions(unittest.TestCase):
     """Test the global functions in auth.py"""
 
-    def test_fetch_200(self, fetch):
-        """Ensure a request with a 200 result returns the content from the
-        request.
-        """
+    def test_fetch_url(self, fetch):
+        """Test that a call to fetch_url returns a valid response"""
         from console.auth import fetch_url
 
         content = "my foo content"
@@ -33,6 +31,27 @@ class TestUrlfetchFunctions(unittest.TestCase):
         fetch.assert_called_once_with(
             url=url, method=urlfetch.GET, payload='',
             headers={'Access-Control-Allow-Origin': '*'})
+
+
+    def test_make_json_request(self, fetch):
+        """Ensure a call to make_json_request returns valid JSON"""
+        from console.auth import fetch_url
+
+        content = "my foo content"
+        url = "my url"
+
+        fetch.return_value.status_code = 200
+        fetch.return_value.content = content
+
+        result = fetch_url(url=url, method=urlfetch.GET, payload='',
+            headers={'Access-Control-Allow-Origin': '*'}).content
+
+        self.assertEqual(result, content)
+
+        fetch.assert_called_once_with(
+            url=url, method=urlfetch.GET, payload='',
+            headers={'Access-Control-Allow-Origin': '*'})
+
 
 
 class TestAuthFunctions(unittest.TestCase):
