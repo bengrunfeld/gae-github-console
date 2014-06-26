@@ -30,14 +30,34 @@ GITHUB_ORGS_MEMBER_URL = 'https://api.github.com/user/orgs'
 GITHUB_API_URL = 'https://api.github.com'
 
 
-def fetch_url(url, method=urlfetch.GET, data=''):
+def fetch_url(**kwargs):
     """Send a HTTP request"""
 
-    result = urlfetch.fetch(url=url, method=method, payload=data,
-                            headers={'Access-Control-Allow-Origin': '*'})
+    # WARN: This is bad. Overriding callers control header.
+    kwargs['headers'] = {'Access-Control-Allow-Origin': '*'}
 
-    if result.status_code == 200:
-        return result.content
+    return urlfetch.fetch(**kwargs)
+
+
+def is_successful_request(request_result):
+    return request_result.status_code == 200
+
+
+class JsonResult():
+
+    def __init__(self, payload=None, failed=False):
+        self.payload = payload
+        self.failed = failed
+
+
+def make_json_request(url, **kwargs):
+
+    request_result = fetch_url(url=url, **kwargs)
+
+    if is_successful_request(request_result):
+        return JsonResult(json.loads(request_result.content)).payload
+
+    return JsonResult(payload="Things are wrong.", failed=True)
 
 
 def get_user_name():
@@ -45,7 +65,8 @@ def get_user_name():
 
     url = '{}/user?access_token={}'.format(GITHUB_API_URL, get_access_token())
 
-    result = json.loads(fetch_url(url))
+    # result = json.loads(fetch_url(url))
+    result = make_json_request(url) 
 
     # Early exit if login not set
     if 'login' not in result:
@@ -118,7 +139,7 @@ def _user_is_org_member():
     url = '{}?access_token={}'.format(GITHUB_ORGS_MEMBER_URL,
                                       get_access_token())
 
-    result = fetch_url(url)
+    result = make_json_request(url)
 
     if '"login":"WebFilings"' not in result:
         return False
@@ -132,7 +153,7 @@ def _user_is_org_admin():
     url = '{}/user/teams?access_token={}'.format(GITHUB_API_URL,
                                                  get_access_token())
 
-    result = fetch_url(url)
+    result = make_json_request(url)
 
     # Check if user belongs to the Owners team
     if '"name":"Owners"' not in result:

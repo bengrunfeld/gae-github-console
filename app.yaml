@@ -21,5 +21,5 @@ handlers:
   secure: always
 
 env_variables:
-  ORG: wf-console-test # Org name goes here
+  ORG: Webfilings-Dev # Org name goes here
   ADMIN_EMAIL: ben@thing.com # Daily digest of logs will be sent here 

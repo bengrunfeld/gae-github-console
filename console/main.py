@@ -5,7 +5,7 @@ Render the front end of the app
 import os
 import json
 
-from auth import fetch_url
+from auth import make_json_request 
 from auth import get_access_token
 from auth import get_user_name
 from basehandler import BaseHandler
@@ -19,7 +19,7 @@ def _get_front_page_data():
           os.environ.get('ORG'), get_access_token())
 
     # Fetch the list of private repos
-    content = json.loads(fetch_url(url))
+    content = make_json_request(url)
 
     response = []
 
